@@ -6,12 +6,65 @@
 | 1 | Weather + sun | ✅ Done 2026-10-03 |
 | 2 | Physics engine (5R1C) | ✅ Done 2026-10-03 |
 | 3 | Billing engine | ✅ Done 2026-10-03 |
-| 4 | Simulation + surrogate + CoolScore bands | 🔄 In progress |
-| 5 | App core (Check, Compare, Investor, Methodology) | — |
-| 6 | Developer View, Listing Badge, API | — |
-| 7 | AI layer (parser, explanations, fallback) | — |
-| 8 | Business layer + real-bill validation | — |
-| 9 | Ship | — |
+| 4 | Simulation + surrogate + CoolScore bands | ✅ Done 2026-10-03 |
+| 5 | App core (Check, Compare, Investor, Methodology) | ✅ Done 2026-10-03 |
+| 6 | Developer View, Listing Badge, API | ✅ Done 2026-10-03 |
+| 7 | AI layer (parser, explanations, fallback) | ✅ Done 2026-10-03 |
+| 8 | Business layer + real-bill validation | ✅ Done 2026-10-03 |
+| 9 | Ship | 🔄 In progress |
+
+## Phase 8 (2026-10-03): business layer + real-bill validation
+
+**Done**
+- Real-bill kit: template + field guide + PII guard (Phase 0); `validation.report` runs on every app load and via
+  `tasks.py validate`; it rebuilds each billed unit, compares total bill, RTh and capacity charge (MAE, MAPE,
+  share within ±20 %, bias) and writes a residual calibration factor once 12+ bill-months exist per system.
+  Status today: **no real bills, so real-world accuracy is not yet validated** (said on the Methodology page).
+- Sanity band (an independent guide, rough, `verify: true`): simulated 1-bed and 2-bed bills fall inside;
+  studio is a little low (324 vs 350–450) and 3-bed a little high (1,218 vs 900–1,200). Reported, not tuned.
+- Documents: `prd.md`, `business_model.md` (recommend brokerage seats first, portal API to scale),
+  `gtm_and_pilot.md` (90-day brokerage pilot, AED 15,000, metrics fixed in advance), `pitch_deck.md` (Marp,
+  6 slides), `interview_prep.md` (12 hard questions), `model_card.md`, `methodology.md`, and `assumptions.md`
+  (generated from the YAML registers by `tasks.py assumptions`; a test fails if it is stale).
+- Business Case page: every price, plan and cost input adjustable; default plan revenue ≈ AED 353k, profit
+  ≈ AED 229k, break-even month 9 (all PROPOSAL values from `assumptions.yaml` → `business`).
+- App review fixes: no-key parser reads "22nd floor of 40" / "floor 9/31"; estimates cached and batched
+  (Check a Unit answer ≈ 0.5 s server-side, ≈ 1–2.5 s in the browser); what-if now anchored to the result card;
+  chiller-free text no longer tells the tenant they pay the capacity charge; drivers chart labels no longer
+  cover the axis; Developer View coloured by A–E grade; Compare default shows "cheaper rent, dearer home";
+  badge details open on tap (phones); P&L cost line visible in dark mode.
+
+**Tests:** 160 passing.
+
+**For Sandeep:** `docs/assumptions.md` → "Verify first"; Marp is not installed, so the deck is Markdown only
+(export: `npx @marp-team/marp-cli docs/pitch_deck.md --pdf`, ask before installing).
+
+## Phases 5–7 (2026-10-03): app, API, AI layer
+
+**Done**
+- Streamlit app (7 pages): Check a Unit (paste or form → score, monthly and annual P10–P90, true monthly cost,
+  drivers, what-if, explanation, questions for the agent), Compare Units, Investor View (net yield,
+  chiller-free premium), Developer View (fictional tower, physics run directly, design levers with AED per unit
+  and per tower), Listing Badge demo, Business Case, Methodology & Validation. Every figure has a
+  "How is this calculated?" expander; footer disclaimer on every page.
+- FastAPI: `POST /score`, `POST /compare`, `GET /health`, OpenAPI docs at `/docs`.
+- AI layer: Claude Haiku 4.5 parser (structured output, found/inferred/missing + evidence quote); no-key
+  regex fallback; direction helper from map geometry (declines when unsure); explanations pass a number guard
+  (any number not in the engine output → template instead).
+
+**Tests:** 155 passing at the Phase 5–7 commit.
+
+## Phase 4 (2026-10-03): simulation + surrogate
+
+**Done**
+- 40,000 Latin-hypercube scenarios (seed 42) through physics + billing in ~4 min; monthly aggregates only.
+- HistGradientBoosting quantile models (P10/P50/P90, log cost) for annual, August and January tenant cost, in a
+  listing-only and a with-household variant; conformal calibration → 79–80 % P10–P90 coverage on held-out runs.
+- Accuracy vs held-out physics: **fidelity R² 0.996** (all inputs; target 0.95 met). Listing-only annual
+  R² **0.938** (below 0.95 by design: hidden variables become the range, decision D2), MAPE 17 %;
+  with household details R² 0.949, MAPE 15 %.
+- CoolScore A–E at stock quintiles of standardised cost intensity: A ≤ 6.84 < B ≤ 7.36 < C ≤ 7.88 < D ≤ 8.47 < E
+  (AED/sq ft/yr). Counterfactual AED drivers. Artifact ≈ 7 MB.
 
 ## Phase 3 (2026-10-03): billing engine
 
@@ -75,7 +128,7 @@ and service-charge cases.
 - Facade sun for 8 orientations with pvlib (Perez sky; ground term computed at runtime from albedo 0.12–0.40).
 - Sanity checks pass: summer E/W 3.4 vs S 1.84 vs N 1.88 kWh/m²/day; while above 38 °C, west gets 34%
   more sun than east; winter south is highest; north is lowest annually.
-- Report `docs/phase1_weather_sun.md` + interactive charts `docs/figures/phase1_weather_sun.html`.
+- Report `docs/evidence/weather.md` + interactive charts `docs/evidence/weather.html`.
 - Assumptions filled: ground albedo range, Open-Meteo terms, NOAA source, bias-correction method.
 
 **Tests:** 75 passing (26 new for Phase 1). `tasks.py data` takes about 30 s.
@@ -91,7 +144,7 @@ schedules, invariant tests, orientation effect vs published UAE studies.
 - Real-bill template (`data/real_bills/template.csv`) + field guide + PII guard (`coolscore.validation.pii`).
 - Competitive check (`docs/competitive_landscape.md`): no direct Dubai competitor found; all local
   tools need RT, RTh or AC tonnage from a bill. Closest overlap: one calculator's manual "hot-facing" preset.
-- Plan (`docs/phase0_plan.md`): architecture, schemas, archetypes, scenario ranges, 20 assumptions to
+- Plan (`docs/plan.md`): architecture, schemas, archetypes, scenario ranges, 20 assumptions to
   verify, 10 risks, 8 decisions.
 - Config: assumption register (placeholders with candidate sources), archetypes, communities
   (3 microclimates), settings. Skeleton package, `tasks.py` + Makefile, pinned requirements.
@@ -99,11 +152,11 @@ schedules, invariant tests, orientation effect vs published UAE studies.
 
 **Tests:** see the latest commit message for the count. All Phase 0 tests pass.
 
-**Decisions D1–D8** (`docs/phase0_plan.md` §8): approved as recommended on 2026-10-03.
+**Decisions D1–D8** (`docs/plan.md` §8): approved as recommended on 2026-10-03.
 
 **Sandeep's to-do now:** start outreach (`docs/user-research/outreach_messages.md`); ask every tenant for typed bill figures.
 
 ## Assumption register status
-Filled: constants, weather (Phase 1), all physics and schedule records (Phase 2), archetypes A1–A4.
-Still null: all billing tariffs (Phase 3), sanity bands (Phase 8), business (Phase 8), orientation literature
-(paper not openable), permit-to-completion lag.
+66 records (`docs/assumptions.md`): 39 sourced, 19 modelling assumptions, 3 proposals, 2 placeholders,
+3 not yet researched (orientation-literature figure, GHI published range, permit-to-completion lag; none is
+used by the engine). 61 are still `verify: true`.

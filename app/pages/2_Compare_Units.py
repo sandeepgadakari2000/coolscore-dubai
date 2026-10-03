@@ -17,7 +17,7 @@ presets = [
     dict(community="Business Bay", facing="W", floor=8, total_floors=30, glass="floor_to_ceiling",
          payer="tenant", annual_rent_aed=92000),
     dict(community="Business Bay", facing="N", floor=20, total_floors=30, glass="medium",
-         payer="landlord_chiller_free", annual_rent_aed=98000),
+         payer="landlord_chiller_free", annual_rent_aed=96000),
     dict(community="Jumeirah Village Circle (JVC)", facing="E", floor=5, total_floors=12, era_band="2015_2021",
          annual_rent_aed=78000),
     dict(community="Dubai Marina", facing="S+W", floor=31, total_floors=31, annual_rent_aed=110000),
@@ -63,10 +63,11 @@ if st.button("Compare", type="primary"):
                        ("Housing fee / month", "#1baf7a")]:
         fig.add_trace(go.Bar(y=df["Unit"], x=df[col], name=col.replace(" / month", ""), orientation="h",
                              marker_color=color, width=0.5, hovertemplate="%{y}: AED %{x:,.0f}<extra></extra>"))
-    fig.update_layout(barmode="stack", height=120 + 60 * len(df), margin=dict(l=10, r=10, t=10, b=10),
-                      legend=dict(orientation="h", y=-0.25), xaxis_title="AED per month",
-                      paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
+    fig.update_layout(barmode="stack", height=120 + 60 * len(df), margin=dict(l=10, r=10, t=30, b=10),
+                      legend=dict(orientation="h", x=0, y=1.02, yanchor="bottom", traceorder="normal"),
+                      xaxis_title="AED per month", paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
     fig.update_yaxes(autorange="reversed")
+    fig.update_xaxes(tickformat=",")
     st.plotly_chart(fig, width="stretch", config={"displayModeBar": False})
     show = df.copy()
     for c in ["Rent / month", "Cooling / month (typical)", "Housing fee / month", "True cost / month"]:

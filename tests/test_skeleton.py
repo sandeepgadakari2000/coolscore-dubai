@@ -26,7 +26,7 @@ def test_claude_md_is_short() -> None:
 @pytest.mark.parametrize(
     "path",
     ["CLAUDE.md", "PROGRESS.md", "README.md", "CoolScore_PROJECT_BRIEF.md", "requirements.txt",
-     "Makefile", "tasks.py", "docs/phase0_plan.md", "docs/competitive_landscape.md"],
+     "Makefile", "tasks.py", "docs/plan.md", "docs/competitive_landscape.md"],
 )
 def test_required_files_exist(path: str) -> None:
     assert (ROOT / path).is_file()

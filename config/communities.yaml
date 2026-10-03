@@ -24,7 +24,7 @@ mapping_verify: true
 # cells differ by only ~1% in cooling degree-hours, 0.2 °C in summer dew point
 # and 1.5% in GHI, so coastal communities use the central weather. Inland is
 # distinct (~13% fewer cooling degree-hours). Coastal data stays cached as evidence.
-# See docs/phase1_weather_sun.md.
+# See docs/evidence/weather.md.
 weather_site:
   coastal: central
   central: central

@@ -83,12 +83,18 @@ if submitted or "check_listing" in st.session_state:
     base_d.setdefault("household_size", int(listing["bedrooms"]) + 1)
     base_d.setdefault("occupancy", "away_daytime")
     base, alt = ui.run_estimate(base_d), ui.run_estimate(what_if)
-    delta = alt.annual.p50 - base.annual.p50
+    annual = ui.shifted(est.annual, alt.annual, base.annual)
+    delta = annual.p50 - est.annual.p50
     m1, m2, m3 = st.columns(3)
-    m1.metric("Typical annual cost", ui.aed(alt.annual.p50), f"{delta:+,.0f} AED vs now", delta_color="inverse")
-    m2.metric("Summer month", ui.aed_range(alt.summer_month))
+    m1.metric("Typical annual cost", ui.aed(annual.p50), f"{delta:+,.0f} AED vs now", delta_color="inverse")
+    m2.metric("Summer month", ui.aed_range(ui.shifted(est.summer_month, alt.summer_month, base.summer_month)))
     m3.metric("CoolScore", alt.score, help="The grade uses a standard household and tariff, so the AC "
                                            "temperature and who pays don't change it.")
+    with st.expander("How is the what-if calculated?"):
+        st.write("Both versions of the unit go through the model that includes household details (your details, "
+                 "or a standard household of bedrooms + 1 people, out by day, if you didn't add them). The "
+                 "difference between them is added to this unit's estimate above, so 'now' always matches the "
+                 "result card. Simulated, like every figure here.")
 
     st.subheader("In plain words")
     st.markdown(explain.explain(est, listing.get("annual_rent_aed")))

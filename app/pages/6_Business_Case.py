@@ -9,7 +9,7 @@ from coolscore import business
 ui.setup("Business Case")
 st.title("Business case")
 st.caption("Every default is a labelled **assumption** (our proposed prices and plan) from `config/assumptions.yaml`, "
-           "not market data. Change anything.")
+           "not market data. Change prices, plan and costs in the sidebar (tap **›** at the top left on a phone).")
 
 b = business.BusinessInputs.defaults()
 with st.sidebar:
@@ -27,6 +27,13 @@ with st.sidebar:
     b.plan["portal_start_month"] = st.slider("Portal deal starts (month; 13 = none)", 4, 13, int(b.plan["portal_start_month"]))
     b.plan["portal_scored_listings"] = st.number_input("Portal listings scored", 0, 500_000, int(b.plan["portal_scored_listings"]), 1000)
     b.plan["monthly_churn"] = st.slider("Monthly seat churn", 0.0, 0.2, float(b.plan["monthly_churn"]), 0.01)
+    b.plan["developer_reports_per_quarter"] = st.slider("Developer reports closed per quarter", 0, 4,
+                                                        int(b.plan["developer_reports_per_quarter"]))
+    st.header("Costs (AED / month)")
+    b.costs["part_time_sales_aed"] = st.number_input("Part-time sales (from month 4)", 0, 100_000,
+                                                     int(b.costs["part_time_sales_aed"]), 500)
+    b.costs["marketing_aed"] = st.number_input("Marketing", 0, 100_000, int(b.costs["marketing_aed"]), 500)
+    b.costs["founder_draw_aed"] = st.number_input("Founder salary", 0, 100_000, int(b.costs["founder_draw_aed"]), 1000)
 
 df = business.pnl(b)
 be = business.break_even_month(df)
@@ -43,11 +50,12 @@ for col, color, name in [("broker_seats", "#2a78d6", "Broker seats"), ("portal_a
     fig.add_trace(go.Bar(x=df["month"], y=df[col], name=name, marker_color=color,
                          hovertemplate=name + ": AED %{y:,.0f}<extra></extra>"))
 fig.add_trace(go.Scatter(x=df["month"], y=df["costs"], name="Costs", mode="lines+markers",
-                         line=dict(color="#0b0b0b", width=2), hovertemplate="Costs: AED %{y:,.0f}<extra></extra>"))
-fig.update_layout(barmode="stack", height=360, margin=dict(l=10, r=10, t=10, b=10), xaxis_title="Month",
-                  yaxis_title="AED per month", legend=dict(orientation="h", y=-0.25),
+                         line=dict(color="#8a8a8a", width=2.5), marker=dict(color="#8a8a8a"), hovertemplate="Costs: AED %{y:,.0f}<extra></extra>"))
+fig.update_layout(barmode="stack", height=380, margin=dict(l=10, r=10, t=40, b=10), xaxis_title="Month",
+                  yaxis_title="AED per month", legend=dict(orientation="h", x=0, y=1.02, yanchor="bottom"),
                   paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
 fig.update_xaxes(dtick=1)
+fig.update_yaxes(tickformat=",", gridcolor="rgba(128,128,128,.2)")
 st.plotly_chart(fig, width="stretch", config={"displayModeBar": False})
 
 st.subheader("Unit economics")
@@ -69,5 +77,5 @@ with st.expander("How is this calculated?"):
     st.write("Revenue = pilot fee (month 1) + broker seats × price (from month 4, with churn) + scored portal "
              "listings × price (from the portal start month) + developer reports (quarterly) + consumer reports. "
              "Costs = AI parsing per listing (Claude Haiku 4.5 list price × tokens) + fixed monthly costs + part-time "
-             "sales from month 4. Founder time is unpaid in year 1. Recommendation and reasoning: docs/business_model.md.")
+             "sales from month 4 + founder salary (0 by default: unpaid in year 1). Recommendation and reasoning: docs/business_model.md.")
 ui.footer()

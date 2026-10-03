@@ -149,10 +149,16 @@ def _basic_parse(text: str) -> ParseResult:
         put("bedrooms", 0, m)
     elif m := re.search(r"\b(\d)\s*(?:-|\s)?(?:bed(?:room)?s?|br|bhk)\b", t, re.I):
         put("bedrooms", int(m.group(1)), m)
+    # "22nd floor of 40", "floor 22 out of 40", "floor 22/40"
+    if m := re.search(r"\b(\d{1,3})(?:st|nd|rd|th)?\s+floor\s+(?:out\s+)?of\s+(\d{1,3})\b"
+                      r"|\bfloor\s*(\d{1,3})\s*(?:/|of|out of)\s*(\d{1,3})\b", t, re.I):
+        put("floor", int(m.group(1) or m.group(3)), m)
+        put("total_floors", int(m.group(2) or m.group(4)), m)
     if m := re.search(r"\b(\d{1,3})(?:st|nd|rd|th)?\s+floor\b|\bfloor\s*(?:no\.?\s*)?(\d{1,3})\b", t, re.I):
         put("floor", int(m.group(1) or m.group(2)), m)
-    if m := re.search(r"\b(\d{1,3})\s*(?:-\s*)?(?:storey|story|floors?)\s+(?:tower|building)|\b(?:tower|building) of (\d{1,3}) floors", t, re.I):
-        put("total_floors", int(m.group(1) or m.group(2)), m)
+    if m := re.search(r"\b(\d{1,3})\s*(?:-\s*)?(?:storey|story|floors?)\s+(?:tower|building)"
+                      r"|\b(?:tower|building) of (\d{1,3}) floors|\b(\d{1,3})[\s-]stor(?:e)?y\b", t, re.I):
+        put("total_floors", int(m.group(1) or m.group(2) or m.group(3)), m)
     if m := re.search(r"\b(north|south|east|west)(?:[\s-]?(east|west))?[\s-]?facing\b", low):
         names = {"north": "N", "south": "S", "east": "E", "west": "W"}
         val = names[m.group(1)] + (names[m.group(2)] if m.group(2) else "")

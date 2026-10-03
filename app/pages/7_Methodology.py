@@ -6,7 +6,7 @@ import pandas as pd
 import ui
 import streamlit as st
 
-from coolscore import config
+from coolscore import assumptions_doc, config
 from coolscore.validation import report as validation
 
 ui.setup("Methodology")
@@ -85,23 +85,8 @@ st.caption("Every real-world number with its source and whether it still needs v
            "and interviews should test.")
 
 
-def records(node, path=""):
-    if isinstance(node, dict):
-        if "value" in node and "source" in node:
-            yield path, node
-            return
-        for k, v in node.items():
-            yield from records(v, f"{path}.{k}" if path else str(k))
-
-
-reg = []
-for file in ("assumptions.yaml", "archetypes.yaml"):
-    for path, rec in records(config.load_yaml(file)):
-        note = str(rec.get("notes") or "")
-        kind = next((k for k in ("MODELLING ASSUMPTION", "PLACEHOLDER", "PROPOSAL") if k in note), "sourced")
-        reg.append({"Assumption": path, "Value": json.dumps(rec["value"])[:80], "Unit": rec["unit"],
-                    "Type": kind if rec["value"] is not None else "not yet researched",
-                    "Verify": "yes" if rec["verify"] else "no", "Source": rec["source"] or ""})
+reg = [{"Assumption": r["path"], "Value": json.dumps(r["value"])[:80], "Unit": r["unit"], "Type": r["kind"],
+        "Verify": "yes" if r["verify"] else "no", "Source": r["source"] or ""} for r in assumptions_doc.register()]
 reg_df = pd.DataFrame(reg)
 kind = st.multiselect("Show", sorted(reg_df["Type"].unique()), default=sorted(reg_df["Type"].unique()))
 st.dataframe(reg_df[reg_df["Type"].isin(kind)], hide_index=True, width="stretch",

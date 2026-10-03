@@ -91,7 +91,10 @@ def badge(letter: str, size: int = 56) -> str:
 
 @st.cache_resource(show_spinner=False)
 def model_ready() -> bool:
+    """Load the surrogate once per server and run one estimate, so the first real answer is warm."""
     predict.load_artifact()
+    predict.estimate({"community": "Business Bay", "size_sqft": 800.0, "bedrooms": 1, "floor": 12,
+                      "total_floors": 30, "facing": "W"})
     return True
 
 
@@ -176,9 +179,13 @@ def drivers_chart(est) -> go.Figure | None:
                            text=[f"{'+' if v > 0 else '−'}AED {abs(v):,.0f}/yr" for v in values],
                            textposition="outside", cliponaxis=False,
                            hovertemplate="%{y}: %{x:+,.0f} AED/yr<extra></extra>"))
-    fig.update_layout(height=60 + 46 * len(labels), margin=dict(l=10, r=90, t=10, b=10),
+    # Leave room beyond each bar end for its outside label, so negative labels never cover the axis names.
+    lo, hi = min(0.0, min(values)), max(0.0, max(values))
+    pad = 0.6 * (hi - lo)
+    fig.update_layout(height=60 + 46 * len(labels), margin=dict(l=10, r=10, t=10, b=10),
                       paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)", xaxis_title="AED per year")
-    fig.update_xaxes(zeroline=True, zerolinecolor="rgba(128,128,128,.5)", gridcolor="rgba(128,128,128,.15)")
+    fig.update_xaxes(zeroline=True, zerolinecolor="rgba(128,128,128,.5)", gridcolor="rgba(128,128,128,.15)",
+                     range=[lo - (pad if lo < 0 else 0), hi + (pad if hi > 0 else 0)], tickformat=",")
     return fig
 
 
@@ -223,15 +230,24 @@ def result_card(est, rent: float | None = None) -> None:
                  f"physics on 2023–25 Dubai weather + published tariffs). Inputs used: "
                  f"{'listing facts + your household details' if est.variant == 'detailed' else 'listing facts only'}.")
         if est.listing["system"] == "district_cooling":
+            payer = {"tenant": "you pay it", "landlord_chiller_free": "the landlord pays it (chiller-free)",
+                     "service_charge": "the owner pays it through the service charge"}[est.listing["payer"]]
             st.write(f"Contracted capacity estimate ≈ {est.contracted_rt_estimate:.1f} RT (from size; real "
                      f"allocations vary) → fixed capacity charge ≈ {aed(est.capacity_aed_per_year)} a year incl. "
-                     "VAT, payable even with the AC off.")
+                     f"VAT, payable even with the AC off; {payer}.")
         st.write(f"CoolScore uses a standard household (bedrooms + 1 people, out by day, 24 °C) and a "
                  f"standard district-cooling tariff so units compare fairly: "
                  f"{est.intensity_aed_per_sqft:.2f} AED per sq ft per year. Grade cut-offs (AED/sq ft/yr): "
                  + ", ".join(f"{l} ≤ {c:.2f}" for l, c in zip("ABCD", est.score_cuts)) + ", E above.")
     for note in est.notes:
         st.caption(note)
+
+
+def shifted(card, alt, base):
+    """Apply a what-if change (alt − base, same model) to the card's own range, so the two never disagree."""
+    from coolscore.model.predict import Range
+
+    return Range(*(max(getattr(card, q) + getattr(alt, q) - getattr(base, q), 0.0) for q in ("p10", "p50", "p90")))
 
 
 def footer() -> None:

@@ -43,6 +43,11 @@ if go:
     m3.metric("Net yield, chiller-free", f"{net_free_p50:.2%}", f"{(net_free_p50 - net_tenant_pays):+.2%} pts",
               help=f"Worst case (P90 cooling): {net_free_p90:.2%}")
 
+    if listing["payer"] == "service_charge" and listing["system"] not in ("dewa_split_ac", "dewa_central_ac"):
+        st.info(f"Cooling here is recovered through service charges, so it is an owner cost like chiller-free: "
+                f"about {ui.aed(landlord_cooling.p50)} a year (simulated). Enter the service charge *excluding* "
+                "cooling above, or this is counted twice.")
+
     st.subheader("Pricing a chiller-free offer")
     if listing["system"] in ("dewa_split_ac", "dewa_central_ac"):
         st.info("This unit's AC runs on the tenant's DEWA meter, so a chiller-free offer doesn't apply.")

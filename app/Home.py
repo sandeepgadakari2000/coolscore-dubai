@@ -43,3 +43,4 @@ st.markdown(
     "4. **Real bills next.** As anonymised bills arrive, a validation report measures real-world accuracy."
 )
 ui.footer()
+ui.model_ready()  # warm the model while the visitor reads, so "Check a unit" answers fast

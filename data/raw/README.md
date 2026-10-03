@@ -8,7 +8,7 @@ Created by `python tasks.py data` (network, about 30 s). Everything else in Cool
 | `weather/openmeteo_ecmwf_ifs_<site>_<year>.csv.gz` | Raw model output as downloaded (provenance) | yes |
 | `weather/validation/ecmwf_ifs_<station>.csv.gz` etc. | Raw model output at the airport coordinates, used to fit and test the correction | yes |
 | `weather/bias_correction.csv` | Additive correction per station × month × hour (°C) | yes |
-| `weather/phase1_summary.json` | Validation statistics feeding `docs/phase1_weather_sun.md` | yes |
+| `weather/phase1_summary.json` | Validation statistics feeding `docs/evidence/weather.md` | yes |
 | `stations/isd_<station>_<year>.csv.gz` | NOAA ISD hourly temperature and dew point at Dubai International and Al Maktoum | yes |
 | `facade/facade_<site>_<year>.csv.gz` | Beam and sky-diffuse sun on 8 vertical orientations (pvlib). Derived; rebuilt automatically on first use | no (gitignored) |
 

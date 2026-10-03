@@ -7,6 +7,7 @@ All AED values are SIMULATED estimates with a P10-P90 range.
 
 from __future__ import annotations
 
+import copy
 import lzma
 import pickle
 from dataclasses import asdict, dataclass, field
@@ -148,7 +149,25 @@ def _formula(system: str, payer: str) -> str:
 
 
 def estimate(listing: dict) -> Estimate:
-    """Simulated cooling-cost estimate for one listing (dict of listing fields)."""
+    """Simulated cooling-cost estimate for one listing (dict of listing fields).
+
+    Repeat calls with the same fields (Streamlit reruns, what-if toggles) are
+    served from a small cache; callers always get their own copy.
+    """
+    try:
+        frozen = tuple(sorted(listing.items()))
+        hash(frozen)
+    except TypeError:
+        return _estimate(listing)
+    return copy.deepcopy(_estimate_cached(frozen))
+
+
+@lru_cache(maxsize=512)
+def _estimate_cached(frozen: tuple) -> Estimate:
+    return _estimate(dict(frozen))
+
+
+def _estimate(listing: dict) -> Estimate:
     full, assumed, missing = normalise(listing)
     art = load_artifact()
     variant = "detailed" if "setpoint_c" in full else "listing"
@@ -174,8 +193,16 @@ def estimate(listing: dict) -> Estimate:
         labels.append(f"AC set to {float(full['setpoint_c']):g} °C vs 24 °C")
     rows.append({**full, "payer": "tenant"})
     rows.append({**full, "payer": "landlord_chiller_free"})
-
-    pred = _predict(rows, variant)
+    # The grade uses a standard household and tariff (decision D1).
+    ref_row = {**full, "system": ref_cfg["system"], "payer": ref_cfg["payer"], "occupancy": ref_cfg["occupancy"],
+               "setpoint_c": ref_cfg["setpoint_c"], "household_size": int(full["bedrooms"]) + 1}
+    if variant == "detailed":            # same model set: one batched pass
+        pred = _predict(rows + [ref_row], variant)
+        std = pred["annual"][-1, 1]
+        pred = {t: v[:-1] for t, v in pred.items()}
+    else:
+        pred = _predict(rows, variant)
+        std = _predict([ref_row], "detailed")["annual"][0, 1]
     ann = pred["annual"]
     drivers = sorted(
         ({"driver": lab, "aed_per_year": float(ann[0, 1] - ann[1 + i, 1])} for i, lab in enumerate(labels)),
@@ -184,9 +211,6 @@ def estimate(listing: dict) -> Estimate:
     landlord_q = np.clip(ann[-2] - ann[-1], 0.0, None) if provider_billed else np.zeros(3)
     landlord = float(landlord_q[1])
 
-    ref_row = {**full, "system": ref_cfg["system"], "payer": ref_cfg["payer"], "occupancy": ref_cfg["occupancy"],
-               "setpoint_c": ref_cfg["setpoint_c"], "household_size": int(full["bedrooms"]) + 1}
-    std = _predict([ref_row], "detailed")["annual"][0, 1]
     intensity = float(std / float(full["size_sqft"]))
     cuts = art["score_cuts_aed_per_sqft"]
 
@@ -200,9 +224,12 @@ def estimate(listing: dict) -> Estimate:
     capacity = rt * config.require("billing.district_cooling.capacity_charge") * (1 + vat) \
         if full["system"] == "district_cooling" else 0.0
     notes = []
-    if full["system"] == "district_cooling":
+    if full["system"] == "district_cooling" and full["payer"] == "tenant":
         notes.append("Ask the agent for the unit's contracted capacity (RT): it sets a fixed charge "
                      "payable even when the AC is off.")
+    elif full["system"] == "district_cooling":
+        notes.append("The owner pays the fixed capacity charge here (set by the unit's contracted RT, payable "
+                     "even when the AC is off); ask for the RT if you are buying.")
     return Estimate(
         listing=full, variant=variant,
         annual=Range(*map(float, ann[0])), summer_month=Range(*map(float, pred["summer"][0])),

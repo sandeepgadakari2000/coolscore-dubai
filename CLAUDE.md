@@ -2,7 +2,7 @@
 
 Predicts a specific Dubai apartment's cooling cost (AED, P10–P90) before rent/purchase,
 using building physics + Dubai tariffs + an ML surrogate. Full brief: `CoolScore_PROJECT_BRIEF.md`.
-Plan: `docs/phase0_plan.md`. Status: `PROGRESS.md` (read it first every session).
+Plan: `docs/plan.md`. Status: `PROGRESS.md` (read it first every session).
 
 ## Process
 - Build in phases (brief §11). After every phase: run all tests, update `PROGRESS.md`, commit.
@@ -66,8 +66,9 @@ Key design rules:
 C:\Users\sande\.venvs\coolscore\Scripts\python.exe tasks.py setup     # install pinned deps
 C:\Users\sande\.venvs\coolscore\Scripts\python.exe tasks.py test      # pytest -q
 ... tasks.py data             # fetch + correct weather, facade sun (network, ~30 s)
-... tasks.py report-weather   # docs/phase1_weather_sun.md + docs/figures/*.html
-... tasks.py report-physics   # docs/phase2_physics.md (orientation, archetypes, stock spread)
-... tasks.py simulate | train | validate | app | api                 # later phases
+... tasks.py report-weather   # docs/evidence/weather.md + weather.html
+... tasks.py report-physics   # docs/evidence/physics.md (orientation, archetypes, stock spread)
+... tasks.py simulate (~4 min) | train (~2 min) | validate | assumptions (docs/assumptions.md)
+... tasks.py app (Streamlit, :8501) | api (FastAPI, :8000, docs at /docs)
 ```
 Pipeline budget: full `data → simulate → train` ≤ 15 min on a laptop; app answers < 3 s.

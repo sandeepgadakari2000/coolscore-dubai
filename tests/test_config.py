@@ -85,3 +85,13 @@ def test_archetype_bands_match_real_bill_template() -> None:
     for band in bands:
         assert f"`{band}`" in readme, band
     assert "building_era_band" in pd.read_csv(ROOT / "data/real_bills/template.csv", nrows=0)
+
+
+def test_assumptions_doc_is_in_sync_with_the_registers() -> None:
+    """docs/assumptions.md is generated; regenerate with `python tasks.py assumptions` after editing the YAML."""
+    from coolscore import assumptions_doc
+
+    assert assumptions_doc.OUT.read_text(encoding="utf-8") == assumptions_doc.render()
+    rows = assumptions_doc.register()
+    assert {r["kind"] for r in rows} <= {"sourced", "not yet researched", *assumptions_doc.KINDS}
+    assert all(r["source"] for r in rows if r["kind"] == "sourced")

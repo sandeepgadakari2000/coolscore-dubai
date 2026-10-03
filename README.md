@@ -6,7 +6,7 @@
 
 **Status:** Phase 0 (plan + user-research kit). No product code yet. See [PROGRESS.md](PROGRESS.md).
 
-- Plan for approval: [docs/phase0_plan.md](docs/phase0_plan.md)
+- Plan for approval: [docs/plan.md](docs/plan.md)
 - Competitive check: [docs/competitive_landscape.md](docs/competitive_landscape.md)
 - User-research kit: [docs/user-research/](docs/user-research/README.md)
 - Real-bill collection template: [data/real_bills/](data/real_bills/README.md)

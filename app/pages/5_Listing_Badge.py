@@ -31,12 +31,14 @@ card = f"""
          font-weight:400;opacity:.7'>/ year</span></div>
     <div style='opacity:.8'>{beds} · {listing['size_sqft']:,.0f} sq ft · Floor {listing['floor']}</div>
     <div style='opacity:.8;margin-bottom:.6rem'>Seabreeze Residences (fictional), {listing['community']}</div>
-    <div title="{tooltip}" style='display:flex;align-items:center;gap:.6rem;border:1px solid rgba(128,128,128,.3);
-         border-radius:10px;padding:.45rem .6rem;cursor:help'>
-      {ui.badge(est.score, 36)}
-      <div style='line-height:1.25'><b>CoolScore {est.score}</b> · Est. cooling AED {low:,.0f}–{high:,.0f}/month
-        <div style='font-size:.75rem;opacity:.7'>summer · simulated estimate · hover for details</div></div>
-    </div>
+    <details title="{tooltip}" style='border:1px solid rgba(128,128,128,.3);border-radius:10px;padding:.45rem .6rem'>
+      <summary style='display:flex;align-items:center;gap:.6rem;cursor:pointer;list-style:none'>
+        {ui.badge(est.score, 36)}
+        <div style='line-height:1.25'><b>CoolScore {est.score}</b> · Est. cooling AED {low:,.0f}–{high:,.0f}/month
+          <div style='font-size:.75rem;opacity:.7'>summer · simulated estimate · tap for details</div></div>
+      </summary>
+      <div style='font-size:.8rem;opacity:.85;margin-top:.5rem'>{tooltip}</div>
+    </details>
   </div>
 </div>
 """

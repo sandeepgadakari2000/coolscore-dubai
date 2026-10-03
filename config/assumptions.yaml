@@ -300,7 +300,7 @@ physics:
     source: https://doi.org/10.3390/buildings14040876
     date_checked: null
     verify: true
-    notes: "Left null: paper could not be opened. Search snippet of 'Smarter Window Selection for Smarter Energy Consumption: The Case of the UAE' (Buildings 2024, 14(4) 876): north-facing windows use 36% less annual energy than the other three directions; east- and west-facing windows use about 41% and 35% more daily cooling energy in August than north- and south-facing windows. Window-only effects; a whole unit's difference should be smaller. Compared in docs/phase2_physics.md."
+    notes: "Left null: paper could not be opened. Search snippet of 'Smarter Window Selection for Smarter Energy Consumption: The Case of the UAE' (Buildings 2024, 14(4) 876): north-facing windows use 36% less annual energy than the other three directions; east- and west-facing windows use about 41% and 35% more daily cooling energy in August than north- and south-facing windows. Window-only effects; a whole unit's difference should be smaller. Compared in docs/evidence/physics.md."
     phase: 2
 
 schedules:
@@ -344,7 +344,7 @@ data_sources:
     source: https://www.ncei.noaa.gov/data/global-hourly/access/
     date_checked: 2026-10-03
     verify: true
-    notes: "Assumption: the Dubai International correction also applies to the coastal (Marina) cell, which has no station. Holdout 2025 results in docs/phase1_weather_sun.md."
+    notes: "Assumption: the Dubai International correction also applies to the coastal (Marina) cell, which has no station. Holdout 2025 results in docs/evidence/weather.md."
     phase: 1
   ghi_published_range:
     value: null

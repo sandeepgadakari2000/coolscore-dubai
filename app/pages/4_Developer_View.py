@@ -1,5 +1,6 @@
 """Developer View: facade heatmap of a fictional tower and the AED impact of design levers."""
 
+import numpy as np
 import plotly.graph_objects as go
 import ui
 import streamlit as st
@@ -48,13 +49,19 @@ with st.spinner("Simulating every unit hour by hour…"):
 grid = df.pivot(index="floor", columns="facing", values="intensity")[list(ORIENTATIONS)].sort_index(ascending=False)
 letters = df.pivot(index="floor", columns="facing", values="score")[list(ORIENTATIONS)].sort_index(ascending=False)
 aed = df.pivot(index="floor", columns="facing", values="annual_aed")[list(ORIENTATIONS)].sort_index(ascending=False)
-cuts = [6.0]
+# Colour by grade with the app-wide A (green) → E (red) palette; hover gives the exact intensity.
+LETTERS = "ABCDE"
+grade = letters.apply(lambda col: col.map(LETTERS.index))
+scale = []
+for i, letter in enumerate(LETTERS):
+    scale += [[i / 5, ui.SCORE_COLORS[letter]], [(i + 1) / 5, ui.SCORE_COLORS[letter]]]
 fig = go.Figure(go.Heatmap(
-    z=grid.values, x=list(ORIENTATIONS), y=[str(f) for f in grid.index], text=letters.values,
-    texttemplate="%{text}", customdata=aed.values, colorscale=[[0, "#0a8f3c"], [0.5, "#c99400"], [1, "#c93636"]],
-    hovertemplate="Floor %{y}, %{x}-facing: CoolScore %{text}<br>AED %{customdata:,.0f}/yr "
-                  "(%{z:.2f} AED/sq ft)<extra></extra>",
-    colorbar=dict(title="AED/sq ft/yr"), xgap=2, ygap=2))
+    z=grade.values, x=list(ORIENTATIONS), y=[str(f) for f in grid.index], text=letters.values,
+    texttemplate="%{text}", customdata=np.dstack([aed.values, grid.values]),
+    colorscale=scale, zmin=-0.5, zmax=4.5,
+    hovertemplate="Floor %{y}, %{x}-facing: CoolScore %{text}<br>AED %{customdata[0]:,.0f}/yr "
+                  "(%{customdata[1]:.2f} AED/sq ft)<extra></extra>",
+    colorbar=dict(title="CoolScore", tickvals=list(range(5)), ticktext=list(LETTERS)), xgap=2, ygap=2))
 fig.update_layout(height=max(360, 22 * floors), margin=dict(l=10, r=10, t=10, b=10),
                   xaxis_title="Facade facing", yaxis_title="Floor", paper_bgcolor="rgba(0,0,0,0)")
 st.plotly_chart(fig, width="stretch", config={"displayModeBar": False})

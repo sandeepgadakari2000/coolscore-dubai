@@ -2,7 +2,7 @@
 
 Reanalysis/forecast grids miss Dubai's urban night-time heat: at Dubai
 International the ECMWF IFS 9 km series undercounts cooling degree-hours by
-about 20% (see ``docs/phase1_weather_sun.md``). We learn an additive
+about 20% (see ``docs/evidence/weather.md``). We learn an additive
 correction per (month, hour of day) from overlapping observed hours and apply
 it to the microclimate sites. Radiation is not changed; relative humidity is
 recomputed from the corrected temperature and dew point.

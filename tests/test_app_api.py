@@ -131,6 +131,16 @@ def test_parser_without_key_flags_status_and_evidence() -> None:
     assert r.form_defaults()["era_band"] == "2015_2021"
 
 
+@pytest.mark.parametrize("text,floor,total", [
+    ("2 bed, 22nd floor of 40, sea view", 22, 40),
+    ("Floor 9/31 in a quiet tower", 9, 31),
+    ("Apartment on the 15th floor of a 45-storey tower", 15, 45),
+])
+def test_parser_reads_floor_and_total_floors_together(text: str, floor: int, total: int) -> None:
+    f = parser.parse_listing(text).fields
+    assert (f["floor"].value, f["total_floors"].value) == (floor, total)
+
+
 def test_parser_reports_missing_instead_of_guessing() -> None:
     r = parser.parse_listing("Lovely apartment with great views, high floor, call now!")
     assert {"size_sqft", "floor", "facing", "community"} <= set(r.missing)
@@ -148,6 +158,16 @@ def test_explanation_guard_blocks_invented_numbers() -> None:
     assert not explain.numbers_ok("Your bill will be about AED 123,456 a year.", f)
     assert explain.explain(est) == explain.template(est)       # no key -> template
     assert explain.questions_for_agent(est)
+
+
+def test_chiller_free_explanation_puts_capacity_charge_on_the_landlord() -> None:
+    est = predict.estimate({**{k: v for k, v in UNIT.items() if k != "annual_rent_aed"},
+                            "payer": "landlord_chiller_free"})
+    f = explain.facts(est)
+    text = explain.template(est)
+    assert f["capacity_charge_paid_by"].startswith("landlord")
+    assert "paid by the landlord" in text and "so ask for the unit's contracted capacity" not in text
+    assert explain.numbers_ok(text, f)
 
 
 def test_direction_helper_uses_geometry_and_declines_when_unsure() -> None:
