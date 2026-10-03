@@ -11,7 +11,37 @@
 | 6 | Developer View, Listing Badge, API | ✅ Done 2026-10-03 |
 | 7 | AI layer (parser, explanations, fallback) | ✅ Done 2026-10-03 |
 | 8 | Business layer + real-bill validation | ✅ Done 2026-10-03 |
-| 9 | Ship | 🔄 In progress |
+| 9 | Ship | ✅ Done 2026-10-03 |
+
+## Phase 9 (2026-10-03): ship
+
+**Done**
+- Portfolio README: pitch + positioning line, real screenshots (`docs/screenshots/`), problem, gap, Mermaid
+  pipeline, accuracy table with the listing-only R² shortfall stated, real-bill status, physics sanity checks,
+  business case, pilot offer, API examples, run and deploy steps, limitations, links. Live-demo and video links are
+  placeholders for Sandeep.
+- Check a Unit: "Try an example" button and `?example=1` link (a fictional tenant-pays listing) so visitors
+  without a listing see a full result in one click. The no-key parser now reads "chiller not included" as tenant pays.
+- Listing Badge: "How is this calculated?" with formula and cut-offs (every AED figure now has one).
+- Streamlit Community Cloud check: a fresh clone (no `data/simulated/`, no facade cache) runs all 8 pages with no
+  errors; the Developer View builds its facade cache in ~5 s on first use; repo ≈ 15 MB, model 7 MB (< 50 MB).
+  Deploy: main file `app/Home.py`, Python 3.13, optional `ANTHROPIC_API_KEY` secret.
+
+**Definition of done (brief §12)**
+- Paste or form → result in < 3 s with no API key: ✅ (≈ 0.5 s server-side, 1–2.5 s in the browser; tested).
+- Every AED figure shows formula, inputs and range: ✅ ("How is this calculated?" on every page with AED).
+- Simulated data labelled; no fabricated tariffs, quotes, bills or competitor claims: ✅ (sources in the register;
+  findings template is placeholders-only, enforced by a test).
+- Surrogate accuracy and physics sanity checks documented: ✅ (`model_card.md`, `docs/evidence/`).
+  Listing-only R² 0.938 is below the 0.95 target by design; fidelity R² 0.996 meets it.
+- Validation report runs automatically when real bills are added: ✅ (tested with synthetic rows).
+- README tells the story in 60 seconds; all tests pass: ✅ 165 passing.
+
+**Left for Sandeep (brief §13)**
+- Interviews and real quotes (`docs/user-research/`), anonymised bills (`data/real_bills/`).
+- Verify the 61 `verify: true` records, starting with `docs/assumptions.md` → "Verify first".
+- Deploy with your own accounts, record the demo, fill the live-demo and video links in the README.
+- Optional: PDF of the deck needs Marp (`npx @marp-team/marp-cli docs/pitch_deck.md --pdf`); not installed.
 
 ## Phase 8 (2026-10-03): business layer + real-bill validation
 

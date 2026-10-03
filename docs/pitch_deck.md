@@ -48,7 +48,7 @@ Abroad the pattern is proven (UK EPC cost estimates, a US portal); in Dubai it d
 - What-if: floor, facing, AC temperature, chiller-free.
 - Compare units · Investor net yield · Developer facade heatmap · Listing badge · API.
 
-[screenshot placeholder: Check a Unit result card]
+![bg right:42% fit](screenshots/check_a_unit.png)
 
 ---
 

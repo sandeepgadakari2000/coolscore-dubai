@@ -104,6 +104,15 @@ def test_check_a_unit_parses_prefills_and_answers_fast() -> None:
     assert "AED" in text and "Questions" in " ".join(m.value for m in at.markdown) + text
 
 
+def test_example_listing_answers_in_one_click() -> None:
+    at = _app("pages/1_Check_a_Unit.py")
+    [b for b in at.button if b.label.startswith("No listing to hand")][0].click().run()
+    assert not at.exception, [e.value for e in at.exception]
+    assert at.text_area(key="listing_text").value.startswith("Bright 1 bedroom")
+    assert "Result" in [h.value for h in at.subheader]
+    assert not at.session_state.parse_result.missing      # the example states every required fact
+
+
 @pytest.mark.parametrize("page,button", [("pages/2_Compare_Units.py", "Compare"),
                                          ("pages/3_Investor_View.py", "Calculate")])
 def test_interactive_pages_run(page, button) -> None:
@@ -139,6 +148,14 @@ def test_parser_without_key_flags_status_and_evidence() -> None:
 def test_parser_reads_floor_and_total_floors_together(text: str, floor: int, total: int) -> None:
     f = parser.parse_listing(text).fields
     assert (f["floor"].value, f["total_floors"].value) == (floor, total)
+
+
+@pytest.mark.parametrize("text,payer", [("District cooling, chiller not included.", "tenant"),
+                                         ("Tenant pays the chiller.", "tenant"),
+                                         ("Chiller free, AED 90k", "landlord_chiller_free"),
+                                         ("Lovely views", None)])
+def test_parser_reads_who_pays_for_cooling(text: str, payer: str | None) -> None:
+    assert parser.parse_listing(text).fields["payer"].value == payer
 
 
 def test_parser_reports_missing_instead_of_guessing() -> None:

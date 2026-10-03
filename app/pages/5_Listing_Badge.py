@@ -43,6 +43,13 @@ card = f"""
 </div>
 """
 st.markdown(card, unsafe_allow_html=True)
+with st.expander("How is this calculated?"):
+    st.write(f"The badge shows the summer-month P10–P90 range (AED {low:,.0f}–{high:,.0f}) for the unit above: "
+             f"{listing['size_sqft']:,.0f} sq ft, floor {listing['floor']} of {listing['total_floors']}, "
+             f"{listing['facing']}-facing. {est.formula}")
+    st.write(f"CoolScore {est.score} = {est.intensity_aed_per_sqft:.2f} AED per sq ft per year under a standard "
+             "household and tariff; cut-offs " + ", ".join(f"{l} ≤ {c:.2f}" for l, c in zip("ABCD", est.score_cuts))
+             + ", E above.")
 st.markdown("**Why a portal might show it:** it answers the most common unasked question (\"what will the AC "
             "cost?\"), lets buyers filter by true cost, and gives good units a reason to stand out. Low-scoring units "
             "get a concrete fix (blinds, film, AC temperature) instead of a vague reputation.")
