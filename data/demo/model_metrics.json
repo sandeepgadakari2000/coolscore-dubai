@@ -1,0 +1,89 @@
+{
+  "variants": {
+    "listing": {
+      "annual": {
+        "r2": 0.9382723082014087,
+        "mae_aed": 793.2584387009682,
+        "mape_pct_bills_over_500": 17.28045985175262,
+        "p10_p90_coverage": 0.8017554858934169,
+        "median_interval_width_aed": 2087.1438685069197
+      },
+      "summer": {
+        "r2": 0.9402719288878485,
+        "mae_aed": 87.10888174377075,
+        "mape_pct_bills_over_500": 12.788458166956621,
+        "p10_p90_coverage": 0.7956112852664576,
+        "median_interval_width_aed": 226.36463161475854
+      },
+      "winter": {
+        "r2": 0.9015877774230289,
+        "mae_aed": 58.05186318466757,
+        "mape_pct_bills_over_500": 17.52124433782468,
+        "p10_p90_coverage": 0.8030094043887147,
+        "median_interval_width_aed": 149.15812163413082
+      }
+    },
+    "detailed": {
+      "annual": {
+        "r2": 0.9493464987217559,
+        "mae_aed": 717.3852208551821,
+        "mape_pct_bills_over_500": 15.485381356934843,
+        "p10_p90_coverage": 0.8001253918495298,
+        "median_interval_width_aed": 1873.1048987863032
+      },
+      "summer": {
+        "r2": 0.9479898016267254,
+        "mae_aed": 82.27356264459354,
+        "mape_pct_bills_over_500": 12.043894468452345,
+        "p10_p90_coverage": 0.7898432601880878,
+        "median_interval_width_aed": 212.208403751984
+      },
+      "winter": {
+        "r2": 0.9193598531825325,
+        "mae_aed": 49.86181609287483,
+        "mape_pct_bills_over_500": 15.989349022068874,
+        "p10_p90_coverage": 0.7958620689655173,
+        "median_interval_width_aed": 119.63412725798037
+      }
+    }
+  },
+  "fidelity": {
+    "annual_tenant_aed": {
+      "r2": 0.9961255284356443,
+      "mae": 161.65545395939026
+    },
+    "annual_kwh_th": {
+      "r2": 0.9921300586581869,
+      "mae": 590.204161182745
+    },
+    "target_r2": 0.95
+  },
+  "n_train": 28016,
+  "n_calibration": 4009,
+  "n_test": 7975,
+  "conformal_log_delta": {
+    "listing": {
+      "annual": 0.02686278112436434,
+      "summer": 0.02311617929756277,
+      "winter": 0.041121508506994614
+    },
+    "detailed": {
+      "annual": 0.026123743552188643,
+      "summer": 0.022396126042789063,
+      "winter": 0.03243973896805884
+    }
+  },
+  "seconds": 120.6,
+  "artifact_mb": 6.96,
+  "score_cuts_aed_per_sqft": [
+    6.84,
+    7.36,
+    7.88,
+    8.47
+  ],
+  "stock_intensity_pctiles": {
+    "0.05": 6.373,
+    "0.5": 7.623,
+    "0.95": 9.472
+  }
+}

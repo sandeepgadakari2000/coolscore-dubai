@@ -20,11 +20,11 @@ TASKS: dict[str, list[str] | str] = {
     "data": [PY, "-m", "coolscore.weather.dataset"],
     "report-weather": [PY, "-m", "coolscore.weather.report"],
     "report-physics": [PY, "-m", "coolscore.physics.report"],
-    "simulate": "Phase 4: scenario dataset",
-    "train": "Phase 4: surrogate models",
-    "validate": "Phase 8: real-bill validation report",
-    "app": "Phase 5: Streamlit app",
-    "api": "Phase 6: FastAPI service",
+    "simulate": [PY, "-m", "coolscore.simulate.run"],
+    "train": [PY, "-m", "coolscore.model.train"],
+    "validate": [PY, "-m", "coolscore.validation.report"],
+    "app": [PY, "-m", "streamlit", "run", "app/Home.py"],
+    "api": [PY, "-m", "uvicorn", "api.main:app", "--port", "8000"],
 }
 
 

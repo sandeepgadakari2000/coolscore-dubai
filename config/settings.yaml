@@ -35,6 +35,31 @@ simulation:
   n_scenarios: 40000
   holdout_fraction: 0.2
   batch_size: 5000
+  # Scenario mix: design choices (weights), NOT a measured picture of Dubai's stock.
+  stock:
+    era: {before_2005: 0.15, "2005_2014": 0.35, "2015_2021": 0.30, "2022_plus": 0.20}
+    bedrooms: {0: 0.20, 1: 0.35, 2: 0.30, 3: 0.12, 4: 0.03}
+    size_sqft_by_bedrooms: {0: [300, 650], 1: [550, 1100], 2: [900, 1700], 3: [1300, 2600], 4: [2000, 4500]}
+    total_floors_by_era: {before_2005: [4, 15], "2005_2014": [10, 80], "2015_2021": [10, 80], "2022_plus": [10, 80]}
+    corner_share: 0.25
+    glass_by_era:
+      before_2005: {low: 0.40, medium: 0.45, high: 0.15, floor_to_ceiling: 0.0}
+      "2005_2014": {low: 0.10, medium: 0.35, high: 0.35, floor_to_ceiling: 0.20}
+      "2015_2021": {low: 0.10, medium: 0.35, high: 0.35, floor_to_ceiling: 0.20}
+      "2022_plus": {low: 0.10, medium: 0.35, high: 0.35, floor_to_ceiling: 0.20}
+    balcony: {none: 0.40, small: 0.35, deep: 0.25}
+    obstruction: {open: 0.30, partial: 0.45, heavy: 0.25}
+    occupancy: {away_daytime: 0.6, home_daytime: 0.4}
+    setpoint_c: [21.0, 26.0]
+    ramadan_share: 0.3
+    system_by_era:
+      before_2005: {district_cooling: 0.30, building_central_plant: 0.10, dewa_split_ac: 0.50, dewa_central_ac: 0.10}
+      "2005_2014": {district_cooling: 0.80, building_central_plant: 0.10, dewa_split_ac: 0.05, dewa_central_ac: 0.05}
+      "2015_2021": {district_cooling: 0.80, building_central_plant: 0.10, dewa_split_ac: 0.05, dewa_central_ac: 0.05}
+      "2022_plus": {district_cooling: 0.80, building_central_plant: 0.10, dewa_split_ac: 0.05, dewa_central_ac: 0.05}
+    payer: {tenant: 0.70, landlord_chiller_free: 0.25, service_charge: 0.05}
+  # Reference unit for the standardised CoolScore grade (decision D1)
+  score_reference: {system: district_cooling, payer: tenant, occupancy: away_daytime, setpoint_c: 24.0}
 
 physics:
   # Design choices for geometry and behaviour (simulation ranges, not facts).
@@ -92,9 +117,11 @@ model:
 
 llm:
   provider: anthropic
-  # Re-check current model names against Anthropic's docs in Phase 7.
-  model: claude-haiku-4-5-20251001
-  max_tokens: 1024
+  # Brief default: Claude Haiku 4.5. Anthropic's current docs list its ID as
+  # claude-haiku-4-5 (the brief's claude-haiku-4-5-20251001 is the same model's dated snapshot).
+  model: claude-haiku-4-5
+  max_tokens: 2048
+  timeout_s: 30
   # Without ANTHROPIC_API_KEY the app falls back to the manual form + templates.
 
 app:
