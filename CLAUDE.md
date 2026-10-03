@@ -44,6 +44,9 @@ docs/              plan, competitive landscape, user research, business docs
 tests/             pytest
 ```
 Key design rules:
+- Weather = Open-Meteo ECMWF IFS 9 km, temp/dew point bias-corrected to NOAA airport obs; read it via
+  `coolscore.weather.dataset.load_weather` (offline). Coastal communities use central weather (D8).
+- Radiation rows are preceding-hour means: solar geometry at t − 30 min. Facade ground term uses albedo at runtime.
 - Physics → monthly energy is cached; billing runs separately so tariff changes only re-bill + retrain.
 - Never hold full hourly arrays for all scenarios: aggregate to monthly totals + peak during the run.
 - CoolScore grade uses a standardised cost (unit only, decision D1); AED shown for the actual payer.
@@ -59,6 +62,8 @@ Key design rules:
 ```
 C:\Users\sande\.venvs\coolscore\Scripts\python.exe tasks.py setup     # install pinned deps
 C:\Users\sande\.venvs\coolscore\Scripts\python.exe tasks.py test      # pytest -q
-... tasks.py data | simulate | train | validate | app | api          # built in later phases
+... tasks.py data             # fetch + correct weather, facade sun (network, ~30 s)
+... tasks.py report-weather   # docs/phase1_weather_sun.md + docs/figures/*.html
+... tasks.py simulate | train | validate | app | api                 # later phases
 ```
 Pipeline budget: full `data → simulate → train` ≤ 15 min on a laptop; app answers < 3 s.

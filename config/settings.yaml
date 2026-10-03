@@ -18,8 +18,18 @@ weather:
   endpoint: https://archive-api.open-meteo.com/v1/archive
   years: [2023, 2024, 2025]
   timezone: Asia/Dubai
-  # Model choice (era5 / era5_land / ecmwf_ifs) decided in Phase 1.
-  model: null
+  # Phase 1 decision: ECMWF IFS 9 km. ERA5 (0.25°) puts all three sites in one
+  # grid cell. All models run cool at Dubai International (urban nights), so
+  # temperature and dew point are bias-corrected to airport observations.
+  model: ecmwf_ifs
+  bias_correction:
+    # microclimate -> NOAA ISD station used for its correction
+    site_station:
+      coastal: "41194099999"   # Dubai International; no coastal station exists (assumption)
+      central: "41194099999"   # Dubai International
+      inland: "41194599999"    # Al Maktoum International (next to the inland site)
+    holdout_year: 2025
+    smooth_hours: 3
 
 simulation:
   n_scenarios: 40000

@@ -1,0 +1,222 @@
+{
+  "model": "ecmwf_ifs",
+  "years": [
+    2023,
+    2024,
+    2025
+  ],
+  "stations": {
+    "41194099999": {
+      "name": "Dubai International Airport",
+      "lat": 25.255,
+      "lon": 55.364,
+      "obs_first": "2023-01-01 04:00:00+04:00",
+      "obs_last": "2025-08-25 01:00:00+04:00",
+      "in_sample_raw": {
+        "hours": 22467.0,
+        "temp_c_bias": -1.8078426136110741,
+        "temp_c_rmse": 2.436782313401707,
+        "dewpoint_c_bias": 0.5092802777406863,
+        "dewpoint_c_rmse": 2.7669192076125873,
+        "cdh24_ratio": 0.7955196051477765,
+        "jja_mean_daily_max_model": 40.45333333333333,
+        "jja_mean_daily_min_model": 30.497777777777777,
+        "jja_mean_daily_max_obs": 41.333333333333336,
+        "jja_mean_daily_min_obs": 33.00111111111111
+      },
+      "in_sample_corrected": {
+        "hours": 22467.0,
+        "temp_c_bias": 0.00011737484699295225,
+        "temp_c_rmse": 1.2665564557858686,
+        "dewpoint_c_bias": 7.062783444252266e-05,
+        "dewpoint_c_rmse": 2.4848103422032812,
+        "cdh24_ratio": 0.9964883062176226,
+        "jja_mean_daily_max_model": 41.00069017222483,
+        "jja_mean_daily_min_model": 32.90999080542774,
+        "jja_mean_daily_max_obs": 41.333333333333336,
+        "jja_mean_daily_min_obs": 33.00111111111111
+      },
+      "holdout": {
+        "raw": {
+          "hours": 5540.0,
+          "temp_c_bias": -1.6896389891696753,
+          "temp_c_rmse": 2.378343172354941,
+          "dewpoint_c_bias": 0.8312274368231047,
+          "dewpoint_c_rmse": 2.9862228777859623,
+          "cdh24_ratio": 0.8088762838804363,
+          "jja_mean_daily_max_model": 40.74302325581395,
+          "jja_mean_daily_min_model": 30.42325581395349,
+          "jja_mean_daily_max_obs": 41.13139534883721,
+          "jja_mean_daily_min_obs": 32.71511627906977
+        },
+        "corrected": {
+          "hours": 5540.0,
+          "temp_c_bias": 0.31509670297734177,
+          "temp_c_rmse": 1.3076180010076268,
+          "dewpoint_c_bias": 0.16497865045731097,
+          "dewpoint_c_rmse": 2.6486807369334144,
+          "cdh24_ratio": 1.018931931988854,
+          "jja_mean_daily_max_model": 41.46853790567447,
+          "jja_mean_daily_min_model": 33.01443832472608,
+          "jja_mean_daily_max_obs": 41.13139534883721,
+          "jja_mean_daily_min_obs": 32.71511627906977
+        }
+      }
+    },
+    "41194599999": {
+      "name": "Al Maktoum International Airport",
+      "lat": 24.886,
+      "lon": 55.172,
+      "obs_first": "2023-01-01 04:00:00+04:00",
+      "obs_last": "2025-08-25 01:00:00+04:00",
+      "in_sample_raw": {
+        "hours": 22317.0,
+        "temp_c_bias": -0.4216337321324551,
+        "temp_c_rmse": 1.337387750590491,
+        "dewpoint_c_bias": -0.3249137428865887,
+        "dewpoint_c_rmse": 2.6170794253090843,
+        "cdh24_ratio": 0.9625166519903361,
+        "jja_mean_daily_max_model": 42.96370370370371,
+        "jja_mean_daily_min_model": 29.731111111111108,
+        "jja_mean_daily_max_obs": 42.477777777777774,
+        "jja_mean_daily_min_obs": 30.214814814814815
+      },
+      "in_sample_corrected": {
+        "hours": 22317.0,
+        "temp_c_bias": 0.00014105441575608908,
+        "temp_c_rmse": 1.1316736760439583,
+        "dewpoint_c_bias": -0.0006391655848706771,
+        "dewpoint_c_rmse": 2.4393602516066517,
+        "cdh24_ratio": 0.999338042277451,
+        "jja_mean_daily_max_model": 42.288796218536284,
+        "jja_mean_daily_min_model": 30.309325188766806,
+        "jja_mean_daily_max_obs": 42.477777777777774,
+        "jja_mean_daily_min_obs": 30.214814814814815
+      },
+      "holdout": {
+        "raw": {
+          "hours": 5502.0,
+          "temp_c_bias": -0.51886586695747,
+          "temp_c_rmse": 1.3657478447987823,
+          "dewpoint_c_bias": 0.35692475463467827,
+          "dewpoint_c_rmse": 2.7393858479046855,
+          "cdh24_ratio": 0.9458274003964598,
+          "jja_mean_daily_max_model": 42.83720930232558,
+          "jja_mean_daily_min_model": 29.387209302325576,
+          "jja_mean_daily_max_obs": 42.53488372093023,
+          "jja_mean_daily_min_obs": 30.03488372093023
+        },
+        "corrected": {
+          "hours": 5502.0,
+          "temp_c_bias": -0.0555081144368289,
+          "temp_c_rmse": 1.1699598947124772,
+          "dewpoint_c_bias": 0.9017723111997574,
+          "dewpoint_c_rmse": 2.756963354154738,
+          "cdh24_ratio": 0.9791507165651613,
+          "jja_mean_daily_max_model": 42.099435323781115,
+          "jja_mean_daily_min_model": 30.021199541854948,
+          "jja_mean_daily_max_obs": 42.53488372093023,
+          "jja_mean_daily_min_obs": 30.03488372093023
+        }
+      }
+    }
+  },
+  "sites": {
+    "coastal": {
+      "lat": 25.08,
+      "lon": 55.14,
+      "station": "41194099999",
+      "2023": {
+        "grid": [
+          25.06151,
+          55.183193
+        ],
+        "mean_temp_c": 29.95,
+        "cdh24": 58198,
+        "ghi_kwh_m2": 2131
+      },
+      "2024": {
+        "grid": [
+          25.06151,
+          55.183193
+        ],
+        "mean_temp_c": 29.91,
+        "cdh24": 57782,
+        "ghi_kwh_m2": 2107
+      },
+      "2025": {
+        "grid": [
+          25.06151,
+          55.183193
+        ],
+        "mean_temp_c": 29.99,
+        "cdh24": 59037,
+        "ghi_kwh_m2": 2129
+      }
+    },
+    "central": {
+      "lat": 25.19,
+      "lon": 55.27,
+      "station": "41194099999",
+      "2023": {
+        "grid": [
+          25.202108,
+          55.302376
+        ],
+        "mean_temp_c": 29.99,
+        "cdh24": 58244,
+        "ghi_kwh_m2": 2101
+      },
+      "2024": {
+        "grid": [
+          25.202108,
+          55.302376
+        ],
+        "mean_temp_c": 30.02,
+        "cdh24": 58072,
+        "ghi_kwh_m2": 2078
+      },
+      "2025": {
+        "grid": [
+          25.202108,
+          55.302376
+        ],
+        "mean_temp_c": 30.33,
+        "cdh24": 60881,
+        "ghi_kwh_m2": 2094
+      }
+    },
+    "inland": {
+      "lat": 24.9,
+      "lon": 55.16,
+      "station": "41194599999",
+      "2023": {
+        "grid": [
+          24.920912,
+          55.16129
+        ],
+        "mean_temp_c": 28.7,
+        "cdh24": 51442,
+        "ghi_kwh_m2": 2149
+      },
+      "2024": {
+        "grid": [
+          24.920912,
+          55.16129
+        ],
+        "mean_temp_c": 28.54,
+        "cdh24": 50610,
+        "ghi_kwh_m2": 2126
+      },
+      "2025": {
+        "grid": [
+          24.920912,
+          55.16129
+        ],
+        "mean_temp_c": 28.74,
+        "cdh24": 52668,
+        "ghi_kwh_m2": 2147
+      }
+    }
+  }
+}

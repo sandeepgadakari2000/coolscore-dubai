@@ -1,0 +1,41 @@
+{
+  "grid_lat": 24.920912,
+  "grid_lon": 55.16129,
+  "grid_elevation_m": 37.0,
+  "utc_offset_seconds": 14400,
+  "units": {
+    "time": "iso8601",
+    "temperature_2m": "\u00b0C",
+    "relative_humidity_2m": "%",
+    "dew_point_2m": "\u00b0C",
+    "surface_pressure": "hPa",
+    "wind_speed_10m": "m/s",
+    "shortwave_radiation": "W/m\u00b2",
+    "direct_radiation": "W/m\u00b2",
+    "diffuse_radiation": "W/m\u00b2",
+    "direct_normal_irradiance": "W/m\u00b2",
+    "cloud_cover": "%"
+  },
+  "endpoint": "https://archive-api.open-meteo.com/v1/archive",
+  "model": "ecmwf_ifs",
+  "request_lat": 24.9,
+  "request_lon": 55.16,
+  "retrieved": "2026-10-03T03:18:38+00:00",
+  "licence": "CC BY 4.0",
+  "attribution": "Weather data by Open-Meteo.com (CC BY 4.0), https://open-meteo.com/",
+  "site": "inland",
+  "year": 2024,
+  "bias_correction": {
+    "station_isd_id": "41194599999",
+    "station_name": "Al Maktoum International Airport",
+    "method": "additive per (month, hour), circular 3-h smoothing; RH recomputed",
+    "corrected_vars": [
+      "temp_c",
+      "dewpoint_c"
+    ]
+  },
+  "grid_lat_lon": [
+    24.920912,
+    55.16129
+  ]
+}

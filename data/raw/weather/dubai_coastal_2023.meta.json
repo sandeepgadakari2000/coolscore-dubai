@@ -1,0 +1,41 @@
+{
+  "grid_lat": 25.06151,
+  "grid_lon": 55.183193,
+  "grid_elevation_m": -1.0,
+  "utc_offset_seconds": 14400,
+  "units": {
+    "time": "iso8601",
+    "temperature_2m": "\u00b0C",
+    "relative_humidity_2m": "%",
+    "dew_point_2m": "\u00b0C",
+    "surface_pressure": "hPa",
+    "wind_speed_10m": "m/s",
+    "shortwave_radiation": "W/m\u00b2",
+    "direct_radiation": "W/m\u00b2",
+    "diffuse_radiation": "W/m\u00b2",
+    "direct_normal_irradiance": "W/m\u00b2",
+    "cloud_cover": "%"
+  },
+  "endpoint": "https://archive-api.open-meteo.com/v1/archive",
+  "model": "ecmwf_ifs",
+  "request_lat": 25.08,
+  "request_lon": 55.14,
+  "retrieved": "2026-10-03T03:18:24+00:00",
+  "licence": "CC BY 4.0",
+  "attribution": "Weather data by Open-Meteo.com (CC BY 4.0), https://open-meteo.com/",
+  "site": "coastal",
+  "year": 2023,
+  "bias_correction": {
+    "station_isd_id": "41194099999",
+    "station_name": "Dubai International Airport",
+    "method": "additive per (month, hour), circular 3-h smoothing; RH recomputed",
+    "corrected_vars": [
+      "temp_c",
+      "dewpoint_c"
+    ]
+  },
+  "grid_lat_lon": [
+    25.06151,
+    55.183193
+  ]
+}

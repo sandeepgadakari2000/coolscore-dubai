@@ -20,6 +20,16 @@ microclimates:
 
 mapping_verify: true
 
+# Phase 1 result (decision D8): after bias correction the coastal and central
+# cells differ by only ~1% in cooling degree-hours, 0.2 °C in summer dew point
+# and 1.5% in GHI, so coastal communities use the central weather. Inland is
+# distinct (~13% fewer cooling degree-hours). Coastal data stays cached as evidence.
+# See docs/phase1_weather_sun.md.
+weather_site:
+  coastal: central
+  central: central
+  inland: inland
+
 communities:
   # coastal
   Dubai Marina: coastal

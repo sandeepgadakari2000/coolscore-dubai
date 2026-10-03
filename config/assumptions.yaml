@@ -129,12 +129,12 @@ billing:
 
 physics:
   ground_albedo:
-    value: null
-    unit: fraction
-    source: null
-    date_checked: null
+    value: {low: 0.12, central: 0.20, high: 0.40}
+    unit: fraction (broadband ground reflectance)
+    source: https://pvlib-python.readthedocs.io/en/stable/reference/generated/pvlib.irradiance.get_ground_diffuse.html
+    date_checked: 2026-10-03
     verify: true
-    notes: Ground reflectance for facade irradiance (urban paving / sand).
+    notes: "pvlib docs: 'typically 0.1-0.4 for bare or vegetated ground'; pvlib SURFACE_ALBEDOS (citing PVsyst and Loutzenhiser et al. 2007, Solar Energy 81:254-267) lists asphalt 0.12, urban 0.18, concrete 0.30, sand 0.40. Central 0.20 is a modelling choice for dense urban ground; low/high bracket asphalt-to-sand. Frey, Rigo & Parlow 2007 (Int. J. Remote Sensing 28:2695-2712) report Dubai's urban albedo below the surrounding desert. Phase 2 samples within the range as hidden variation."
     phase: 1
   thermal_mass_class:
     value: null
@@ -221,12 +221,36 @@ schedules:
 
 data_sources:
   open_meteo_terms:
-    value: null
+    value: {endpoint: "https://archive-api.open-meteo.com/v1/archive", model: ecmwf_ifs, licence: CC BY 4.0, free_tier: non-commercial}
     unit: licence summary
     source: https://open-meteo.com/en/terms
     date_checked: 2026-10-03
     verify: true
-    notes: "Read 2026-10-03: free API is for non-commercial use only (<10,000 calls/day); data licensed CC BY 4.0 with attribution. Commercial use needs a paid plan. Value set once Phase 1 records the exact endpoint/model used."
+    notes: "Read 2026-10-03: free API is for non-commercial use only (<10,000 calls/day); data licensed CC BY 4.0 with attribution. Commercial use needs a paid plan. Attribution shown in the app's Methodology page and data/raw/README.md."
+    phase: 1
+  noaa_isd_observations:
+    value: {stations: {"41194099999": Dubai International, "41194599999": Al Maktoum International}, last_obs: "2025-08-25"}
+    unit: station list
+    source: https://www.ncei.noaa.gov/data/global-hourly/access/
+    date_checked: 2026-10-03
+    verify: false
+    notes: NOAA Integrated Surface Database hourly observations (US government open data), used only to bias-correct and validate model temperature and dew point. Station files currently end 2025-08-25.
+    phase: 1
+  weather_bias_correction:
+    value: {method: additive per month x hour, vars: [temp_c, dewpoint_c], coastal_uses: Dubai International}
+    unit: method
+    source: https://www.ncei.noaa.gov/data/global-hourly/access/
+    date_checked: 2026-10-03
+    verify: true
+    notes: "Assumption: the Dubai International correction also applies to the coastal (Marina) cell, which has no station. Holdout 2025 results in docs/phase1_weather_sun.md."
+    phase: 1
+  ghi_published_range:
+    value: null
+    unit: kWh/m2/yr global horizontal irradiation
+    source: https://www.researchgate.net/publication/320076428_The_UAE_Solar_Atlas
+    date_checked: null
+    verify: true
+    notes: "Left null because neither source could be opened. Sanity band only. Search snippets: UAE Solar Atlas reports 2100-2300 kWh/m2 GHI across the UAE; DEWA Shams Dubai connection guidelines (2020) quote about 2000-2100 kWh/m2 for Dubai (dewa.gov.ae returned 403)."
     phase: 1
 
 sanity_bands:
