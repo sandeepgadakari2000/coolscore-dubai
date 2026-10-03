@@ -180,4 +180,4 @@ def test_every_community_has_cached_weather() -> None:
 def test_require_refuses_placeholders() -> None:
     assert config.require("physics.ground_albedo")["central"] == pytest.approx(0.2)
     with pytest.raises(config.MissingAssumptionError):
-        config.require("billing.district_cooling.consumption_charge")
+        config.require("regulation_milestones.permit_to_completion_lag", "archetypes.yaml")
