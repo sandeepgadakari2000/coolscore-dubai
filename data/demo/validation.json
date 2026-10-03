@@ -1,0 +1,39 @@
+{
+  "generated": "2026-10-03T04:36:46+00:00",
+  "n_units": 0,
+  "n_bill_months": 0,
+  "sanity_band": [
+    {
+      "bedrooms": 0,
+      "simulated_median_month_aed": 324,
+      "band_low": 350,
+      "band_high": 450,
+      "inside_band": false,
+      "n": 4063
+    },
+    {
+      "bedrooms": 1,
+      "simulated_median_month_aed": 534,
+      "band_low": 450,
+      "band_high": 600,
+      "inside_band": true,
+      "n": 7120
+    },
+    {
+      "bedrooms": 2,
+      "simulated_median_month_aed": 826,
+      "band_low": 650,
+      "band_high": 850,
+      "inside_band": true,
+      "n": 6078
+    },
+    {
+      "bedrooms": 3,
+      "simulated_median_month_aed": 1218,
+      "band_low": 900,
+      "band_high": 1200,
+      "inside_band": false,
+      "n": 2479
+    }
+  ]
+}

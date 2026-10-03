@@ -357,20 +357,66 @@ data_sources:
 
 sanity_bands:
   typical_monthly_bills_by_bedrooms:
-    value: null
-    unit: AED per month (range) by bedrooms and season
-    source: null
-    date_checked: null
+    value: {0: [350, 450], 1: [450, 600], 2: [650, 850], 3: [900, 1200]}
+    unit: AED per month, district cooling, tenant-paid (rough average band by bedrooms)
+    source: https://utilitybilluae.com/district-cooling-cost-uae/
+    date_checked: 2026-10-03
     verify: true
-    notes: Rough bands from reputable guides only; published guides disagree with each other (see docs/competitive_landscape.md).
+    notes: "Independent calculator site (no publication date): 'Studio AED 350-450, 1-bedroom AED 450-600, 2-bedroom AED 650-850, 3-bedroom AED 900-1,200'; it also quotes capacities 'Studio 3-4 RT, 1BR 4-5 RT, 2BR 6-8 RT, 3BR 10-12 RT'. Major portal guides (Property Finder, MyBayut) explain the tariff but give no typical bills. ROUGH SANITY BAND ONLY, never a model input."
     phase: 8
 
 business:
-  placeholder:
-    value: null
-    unit: n/a
+  # Everything here is a PROPOSAL (our pricing and plan) unless a source is cited.
+  # The Business Case page and docs/business_model.md read these defaults.
+  usd_to_aed:
+    value: 3.67
+    unit: AED per USD
+    source: https://www.witpress.com/Secure/elibrary/papers/SC20/SC20008FU1.pdf
+    date_checked: 2026-10-03
+    verify: true
+    notes: "Rodriguez-Ubinas et al. 2020 Table 2 note: '3.67 Dirhams = USD $1' (the dirham is pegged to the US dollar)."
+    phase: 8
+  llm_price_per_mtok_usd:
+    value: {model: claude-haiku-4-5, input: 1.0, output: 5.0}
+    unit: USD per million tokens
+    source: https://platform.claude.com/docs/en/about-claude/pricing
+    date_checked: 2026-10-03
+    verify: true
+    notes: "Claude Haiku 4.5 list price from Anthropic's model table (cached 2026-09-25 in the Claude API reference). Used for the per-listing AI parsing cost."
+    phase: 8
+  tokens_per_listing_parse:
+    value: {input: 2000, output: 600}
+    unit: tokens per parsed listing (system prompt + listing text; structured fields out)
     source: null
     date_checked: null
     verify: true
-    notes: Pricing, unit economics and P&L assumptions are added in Phase 8, each marked as an assumption.
+    notes: "PLACEHOLDER: engineering estimate for a ~150-word listing; measure from response.usage once live."
+    phase: 8
+  pricing:
+    value: {broker_seat_aed_month: 149, brokerage_min_seats: 10, portal_aed_per_scored_listing_month: 1.5,
+            developer_report_aed: 35000, consumer_report_aed: 29, pilot_fee_aed: 15000}
+    unit: AED
+    source: null
+    date_checked: null
+    verify: true
+    notes: "PROPOSAL: CoolScore's own launch prices (not market data). Broker seat priced well below typical listing-portal subscription costs a brokerage already pays; validate in broker interviews (H6)."
+    phase: 8
+  plan_12m:
+    value: {pilot_months: 3, brokerages_month_4: 2, new_brokerages_per_month: 1, seats_per_brokerage: 12,
+            portal_start_month: 10, portal_scored_listings: 20000, developer_reports_per_quarter: 1,
+            consumer_reports_per_month: 40, monthly_churn: 0.03}
+    unit: counts per month (12-month plan)
+    source: null
+    date_checked: null
+    verify: true
+    notes: "PROPOSAL: a deliberately modest plan for a solo founder; every number is an input on the Business Case page."
+    phase: 8
+  costs_month:
+    value: {hosting_aed: 400, tools_and_data_aed: 300, legal_and_privacy_aed: 1500, marketing_aed: 2500,
+            bill_collection_incentives_aed: 1000, founder_draw_aed: 0, part_time_sales_aed: 6000}
+    unit: AED per month
+    source: null
+    date_checked: null
+    verify: true
+    notes: "PROPOSAL: placeholder costs (founder unpaid in year 1; part-time sales from the first paid month). Replace with real quotes."
     phase: 8

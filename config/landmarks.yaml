@@ -1,0 +1,41 @@
+# Map geometry for the direction helper (approximate WGS84 points; verify: true).
+# These are public geographic locations used only to compute a compass bearing
+# from a community to what its listings call "the view". Suggestions are always
+# shown as "likely" and must be confirmed by the user.
+verify: true
+landmarks:   # name: {at: [lat, lon], match: words that identify it in a view description}
+  burj khalifa: {at: [25.1972, 55.2744], match: [khalifa]}
+  palm jumeirah: {at: [25.1124, 55.1390], match: [palm]}
+  burj al arab: {at: [25.1412, 55.1853], match: [al arab]}
+  ain dubai: {at: [25.0794, 55.1201], match: [ain dubai, dubai eye]}
+  dubai frame: {at: [25.2354, 55.3003], match: [frame]}
+# Communities whose "sea view" means looking across the Gulf. Dubai's coast runs
+# roughly south-west to north-east, so the open sea lies to the north-west.
+sea_direction:
+  Dubai Marina: NW
+  Jumeirah Beach Residence (JBR): NW
+  Dubai Harbour: NW
+  Bluewaters Island: NW
+  Al Sufouh: NW
+  Jumeirah Lake Towers (JLT): NW
+# Approximate community centres (for bearings to landmarks)
+centres:
+  Dubai Marina: [25.0805, 55.1403]
+  Jumeirah Beach Residence (JBR): [25.0784, 55.1339]
+  Jumeirah Lake Towers (JLT): [25.0700, 55.1430]
+  Palm Jumeirah: [25.1124, 55.1390]
+  Dubai Harbour: [25.0930, 55.1450]
+  Bluewaters Island: [25.0800, 55.1210]
+  Al Sufouh: [25.1100, 55.1700]
+  Downtown Dubai: [25.1950, 55.2760]
+  Business Bay: [25.1860, 55.2660]
+  DIFC: [25.2120, 55.2800]
+  Sheikh Zayed Road / Trade Centre: [25.2200, 55.2800]
+  Dubai Creek Harbour: [25.2000, 55.3450]
+  Al Barsha: [25.1100, 55.2000]
+  Barsha Heights (Tecom): [25.0980, 55.1760]
+  Jumeirah Village Circle (JVC): [25.0600, 55.2070]
+  Dubai Hills Estate: [25.1050, 55.2450]
+  Meydan / Sobha Hartland: [25.1750, 55.3100]
+  Bur Dubai: [25.2550, 55.2950]
+  Deira: [25.2700, 55.3200]

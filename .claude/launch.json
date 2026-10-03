@@ -2,10 +2,31 @@
   "version": "0.0.1",
   "configurations": [
     {
-      "name": "docs",
-      "runtimeExecutable": "C:\\Users\\sande\\.venvs\\coolscore\\Scripts\\python.exe",
-      "runtimeArgs": ["-m", "http.server", "8765", "--directory", "docs"],
-      "port": 8765
+      "name": "app",
+      "runtimeExecutable": "C:/Users/sande/.venvs/coolscore/Scripts/python.exe",
+      "runtimeArgs": [
+        "-m",
+        "streamlit",
+        "run",
+        "app/Home.py",
+        "--server.port",
+        "8501",
+        "--server.headless",
+        "true"
+      ],
+      "port": 8501
+    },
+    {
+      "name": "api",
+      "runtimeExecutable": "C:/Users/sande/.venvs/coolscore/Scripts/python.exe",
+      "runtimeArgs": [
+        "-m",
+        "uvicorn",
+        "api.main:app",
+        "--port",
+        "8000"
+      ],
+      "port": 8000
     }
   ]
 }
