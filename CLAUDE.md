@@ -8,6 +8,7 @@ Plan: `docs/phase0_plan.md`. Status: `PROGRESS.md` (read it first every session)
 - Build in phases (brief §11). After every phase: run all tests, update `PROGRESS.md`, commit,
   summarise in ≤ 10 lines, then **stop and wait for Sandeep's "go"**.
 - Commit as Sandeep (repo-local git config), no Claude co-author line (decision D5).
+- YAML 1.1 traps: quote keys like `"2005_2014"` (int) and `"off"`/`"on"`/`"no"` (bool).
 - Dependencies allowed without asking: numpy, pandas, scikit-learn, pvlib, requests, pyyaml,
   streamlit, plotly, fastapi, uvicorn, pydantic, anthropic, pytest. **Ask before anything else**
   (EnergyPlus, LightGBM, SHAP, numba, pyarrow as a direct dependency...).
@@ -47,6 +48,8 @@ Key design rules:
 - Weather = Open-Meteo ECMWF IFS 9 km, temp/dew point bias-corrected to NOAA airport obs; read it via
   `coolscore.weather.dataset.load_weather` (offline). Coastal communities use central weather (D8).
 - Radiation rows are preceding-hour means: solar geometry at t − 30 min. Facade ground term uses albedo at runtime.
+- Physics: `physics.params.ListingSpec` → `build_params(specs, "central" | rng)` → `engine.run_site_year`.
+  Vectorised 5R1C must match `physics.reference` (literal ISO Annex C); outputs monthly kWh_th only.
 - Physics → monthly energy is cached; billing runs separately so tariff changes only re-bill + retrain.
 - Never hold full hourly arrays for all scenarios: aggregate to monthly totals + peak during the run.
 - CoolScore grade uses a standardised cost (unit only, decision D1); AED shown for the actual payer.
@@ -64,6 +67,7 @@ C:\Users\sande\.venvs\coolscore\Scripts\python.exe tasks.py setup     # install 
 C:\Users\sande\.venvs\coolscore\Scripts\python.exe tasks.py test      # pytest -q
 ... tasks.py data             # fetch + correct weather, facade sun (network, ~30 s)
 ... tasks.py report-weather   # docs/phase1_weather_sun.md + docs/figures/*.html
+... tasks.py report-physics   # docs/phase2_physics.md (orientation, archetypes, stock spread)
 ... tasks.py simulate | train | validate | app | api                 # later phases
 ```
 Pipeline budget: full `data → simulate → train` ≤ 15 min on a laptop; app answers < 3 s.

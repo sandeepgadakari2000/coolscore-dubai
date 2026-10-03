@@ -36,6 +36,55 @@ simulation:
   holdout_fraction: 0.2
   batch_size: 5000
 
+physics:
+  # Design choices for geometry and behaviour (simulation ranges, not facts).
+  # Triples are [low, central, high]: Phase 4 samples low-high; single runs use central.
+  glass_wwr:
+    low: [0.15, 0.25, 0.30]
+    medium: [0.30, 0.40, 0.50]
+    high: [0.50, 0.60, 0.70]
+    floor_to_ceiling: [0.70, 0.80, 0.90]
+  balcony_depth_m:
+    none: [0.0, 0.0, 0.0]
+    small: [1.0, 1.3, 1.6]
+    deep: [1.8, 2.2, 3.0]
+  balcony_width_fraction: [0.3, 0.6, 0.8]   # share of window width under the balcony slab
+  obstruction:                              # neighbouring tower in front of the facade
+    open: {height_m: [0, 0, 0], distance_m: [60, 60, 60]}
+    partial: {height_m: [40, 80, 120], distance_m: [40, 60, 80]}
+    heavy: {height_m: [80, 150, 250], distance_m: [25, 35, 50]}
+  floor_to_floor_m: [3.0, 3.2, 3.4]
+  slab_and_void_m: 0.4                      # floor-to-floor minus clear room height (air volume)
+  warmup_hours: 168                         # first week simulated twice to settle the mass temperature
+  unit_depth_m: [8.0, 10.0, 12.0]
+  corner_side_fraction: [0.6, 0.8, 1.0]     # second facade length as a share of unit depth
+  heavy_mass_share: 0.5                     # probability of ISO 'heavy' vs 'medium' class
+  setpoint_c: [21.0, 24.0, 26.0]            # 24 C = brief default and Al Sa'fat design indoor temp
+  away_behaviour: {keep_setpoint: 0.4, setback: 0.4, "off": 0.2}   # quoted: YAML reads bare off as false
+  setback_k: 3.0
+  window_opening:                           # mild weather: occupants ventilate instead of running AC
+    share: 0.5                              # probability a household does this (central run: yes)
+    outdoor_below_setpoint_k: 3.0           # only when outdoor air is this much cooler than the setpoint
+    min_outdoor_c: 16.0
+    min_presence: 0.5
+  away_threshold: 0.2                       # presence below this = nobody home
+  cop_reference_temp_c: 35.0                # T1 rating temperature; physics stores load x (T - 35)+ for Phase 3
+  # Share of household at home, by hour of day (index 0-23 = timestamp hour, hour-ending).
+  presence:
+    away_daytime:
+      workday: [1, 1, 1, 1, 1, 1, 1, 0.8, 0.3, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.2, 0.4, 0.7, 0.9, 1, 1, 1, 1]
+      friday: [1, 1, 1, 1, 1, 1, 1, 0.8, 0.3, 0.1, 0.1, 0.1, 0.1, 0.5, 0.7, 0.7, 0.7, 0.7, 0.8, 0.9, 1, 1, 1, 1]
+      weekend: [1, 1, 1, 1, 1, 1, 1, 1, 1, 0.9, 0.7, 0.6, 0.6, 0.5, 0.5, 0.5, 0.6, 0.7, 0.8, 0.8, 0.9, 1, 1, 1]
+      ramadan_workday: [1, 1, 1, 1, 1, 1, 1, 1, 0.5, 0.1, 0.1, 0.1, 0.1, 0.1, 0.3, 0.8, 1, 1, 1, 1, 1, 1, 1, 1]
+    home_daytime:
+      workday: [1, 1, 1, 1, 1, 1, 1, 1, 0.8, 0.7, 0.7, 0.7, 0.8, 0.8, 0.7, 0.7, 0.8, 0.9, 1, 1, 1, 1, 1, 1]
+      friday: [1, 1, 1, 1, 1, 1, 1, 1, 0.8, 0.7, 0.7, 0.7, 0.8, 0.8, 0.7, 0.7, 0.8, 0.9, 1, 1, 1, 1, 1, 1]
+      weekend: [1, 1, 1, 1, 1, 1, 1, 1, 1, 0.9, 0.8, 0.7, 0.7, 0.7, 0.7, 0.7, 0.8, 0.8, 0.9, 0.9, 1, 1, 1, 1]
+      ramadan_workday: [1, 1, 1, 1, 1, 1, 1, 1, 0.9, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.9, 1, 1, 1, 1, 1, 1, 1, 1]
+  resting_hours: [0, 1, 2, 3, 4, 5, 6]           # occupants at resting gains
+  ramadan_resting_hours: [4, 5, 6, 7, 8, 9]       # sleep after suhoor (optional Ramadan schedule)
+  appliance_base_share: 0.35                      # appliance gains that run with nobody home
+
 model:
   quantiles: [0.1, 0.5, 0.9]
   fidelity_r2_target: 0.95

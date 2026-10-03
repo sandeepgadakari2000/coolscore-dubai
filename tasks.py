@@ -1,7 +1,7 @@
 """Cross-platform task runner (Windows has no `make`).
 
 Usage: python tasks.py <task> [extra args passed through]
-Tasks: setup, data, report-weather, simulate, train, validate, test, app, api
+Tasks: setup, data, report-weather, report-physics, simulate, train, validate, test, app, api
 """
 
 from __future__ import annotations
@@ -19,6 +19,7 @@ TASKS: dict[str, list[str] | str] = {
     "test": [PY, "-m", "pytest", "-q"],
     "data": [PY, "-m", "coolscore.weather.dataset"],
     "report-weather": [PY, "-m", "coolscore.weather.report"],
+    "report-physics": [PY, "-m", "coolscore.physics.report"],
     "simulate": "Phase 4: scenario dataset",
     "train": "Phase 4: surrogate models",
     "validate": "Phase 8: real-bill validation report",

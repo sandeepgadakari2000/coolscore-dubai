@@ -5,10 +5,16 @@
 #   value         number, list or mapping; null = PLACEHOLDER, not yet researched
 #   unit          physical or currency unit
 #   source        URL of the primary source (null while value is null)
-#   date_checked  YYYY-MM-DD when the source was last opened (null if never)
+#   date_checked  YYYY-MM-DD when the value was last checked against the source
+#                 (notes say when only an abstract or search snippet was readable)
 #   verify        true until Sandeep has personally confirmed the value
 #   notes         context, caveats, competing figures
 #   phase         build phase that researches / first uses it
+#
+# Ranges are {low, central, high}: simulation samples within low-high as hidden
+# variation; central is used for single deterministic runs.
+# "MODELLING ASSUMPTION" in notes = no primary source gives this number; the
+# cited source anchors it. These are the first things real bills should test.
 #
 # Rule: code must refuse to run a stage whose required records are still null.
 # Tests (tests/test_config.py) enforce the schema.
@@ -22,6 +28,22 @@ constants:
     verify: false
     notes: Definition, not a tariff. NIST SP 811 Appendix B.9 lists ton of refrigeration (12 000 Btu_IT/h) = 3.516 853 E+03 W.
     phase: 3
+  air_volumetric_heat_capacity:
+    value: 1200
+    unit: J/(m3 K)
+    source: https://www.sysecol2.ethz.ch/OptiControl/LiteratureOC/ISO_07_FDIS_13790_ApprovalDraft.pdf
+    date_checked: 2026-10-03
+    verify: false
+    notes: "ISO 13790 Eq. 21: rho_a c_a = 1 200 J/(m3 K)."
+    phase: 2
+  latent_air_factor:
+    value: {air_density_kg_m3: 1.2, vapour_heat_j_kg: 2500000}
+    unit: "latent W = density x airflow (m3/s) x vapour_heat x delta humidity ratio (kg/kg)"
+    source: https://www.tagengineering.ca/wp-content/uploads/2015/01/1997-Fundamentals_28.pdf
+    date_checked: 2026-10-03
+    verify: false
+    notes: "1997 ASHRAE Fundamentals Ch. 28 Eq. 23: q_l = 60 x 0.075 x 1076 Q W = 4840 Q W (Btu/h, cfm); 0.075 lb/ft3 = 1.2 kg/m3 and 1076 Btu/lb = 2.50 MJ/kg (vapour at 75 F 50% RH less condensate at 50 F)."
+    phase: 2
 
 billing:
   vat_rate:
@@ -136,87 +158,135 @@ physics:
     verify: true
     notes: "pvlib docs: 'typically 0.1-0.4 for bare or vegetated ground'; pvlib SURFACE_ALBEDOS (citing PVsyst and Loutzenhiser et al. 2007, Solar Energy 81:254-267) lists asphalt 0.12, urban 0.18, concrete 0.30, sand 0.40. Central 0.20 is a modelling choice for dense urban ground; low/high bracket asphalt-to-sand. Frey, Rigo & Parlow 2007 (Int. J. Remote Sensing 28:2695-2712) report Dubai's urban albedo below the surrounding desert. Phase 2 samples within the range as hidden variation."
     phase: 1
-  thermal_mass_class:
-    value: null
-    unit: ISO 13790 class -> Am (m2 per m2 floor), Cm (J/K per m2 floor)
-    source: null
-    date_checked: null
+  iso13790_constants:
+    value: {h_is: 3.45, lambda_at: 4.5, h_ms: 9.1, f_w: 0.90, frame_fraction: 0.20, f_r_wall: 0.5, f_r_roof: 1.0, h_r: 4.5, delta_theta_er: 13.0}
+    unit: "h_is, h_ms, h_r W/m2K; delta_theta_er K; others dimensionless"
+    source: https://www.sysecol2.ethz.ch/OptiControl/LiteratureOC/ISO_07_FDIS_13790_ApprovalDraft.pdf
+    date_checked: 2026-10-03
     verify: true
-    notes: ISO 13790:2008 Table 12 class values for concrete-frame apartments.
+    notes: "ISO/FDIS 13790:2007 (approval draft of ISO 13790:2008). Eq. 9 h_is=3.45, a_t=4.5; 12.2.2 h_ms=9.1; 11.4.2 F_w=0.90 (non-scattering glazing); frame fraction 'for cooling dominated climates for instance a fixed value of 0,20'; 11.4.6 F_r=0.5 vertical wall, 1 roof; h_r ~ 5 x emissivity (emissivity 0.9 -> 4.5); sky temperature depression 13 K for the tropics (11 K intermediate zones); Dubai at 25 N is assigned the tropics value."
+    phase: 2
+  thermal_mass_class:
+    value: {medium: {am_per_af: 2.5, cm_per_af: 165000}, heavy: {am_per_af: 3.0, cm_per_af: 260000}}
+    unit: "Am in m2 per m2 floor; Cm in J/K per m2 floor"
+    source: https://www.sysecol2.ethz.ch/OptiControl/LiteratureOC/ISO_07_FDIS_13790_ApprovalDraft.pdf
+    date_checked: 2026-10-03
+    verify: true
+    notes: "ISO/FDIS 13790:2007 Table 12, simple hourly method. Concrete-frame apartments are sampled between 'medium' and 'heavy' (furnishings and gypsum ceilings decouple part of the slab mass): MODELLING ASSUMPTION on which class applies."
+    phase: 2
+  external_surface_resistance:
+    value: 0.04
+    unit: m2K/W
+    source: https://www.sysecol2.ethz.ch/OptiControl/LiteratureOC/ISO_07_FDIS_13790_ApprovalDraft.pdf
+    date_checked: 2026-10-03
+    verify: true
+    notes: "ISO 13790 Eq. 46-47 take R_se from ISO 6946; 0.04 m2K/W is the ISO 6946 value for normal exposure (ISO 6946 itself not opened)."
+    phase: 2
+  opaque_solar_absorptance:
+    value: {low: 0.3, central: 0.5, high: 0.7}
+    unit: fraction
+    source: https://www.sysecol2.ethz.ch/OptiControl/LiteratureOC/ISO_07_FDIS_13790_ApprovalDraft.pdf
+    date_checked: 2026-10-03
+    verify: true
+    notes: "MODELLING ASSUMPTION: light-to-medium facade finishes. ISO 13790 Eq. 46 defines how absorptance enters; it gives no default."
+    phase: 2
+  window_shading_reduction:
+    value: {low: 0.6, central: 0.8, high: 1.0}
+    unit: multiplier on glazing g-value (internal blinds/curtains, time-averaged)
+    source: https://www.sysecol2.ethz.ch/OptiControl/LiteratureOC/ISO_07_FDIS_13790_ApprovalDraft.pdf
+    date_checked: 2026-10-03
+    verify: true
+    notes: "ISO 13790 Table G.2 gives reduction factors 0.20-0.95 for internal curtains/blinds when closed. Time-averaged residential use is a MODELLING ASSUMPTION (1.0 = never used)."
+    phase: 2
+  sc_to_shgc:
+    value: 0.87
+    unit: SHGC per unit shading coefficient
+    source: https://www.witpress.com/Secure/elibrary/papers/SC20/SC20008FU1.pdf
+    date_checked: 2026-10-03
+    verify: true
+    notes: "Rodriguez-Ubinas et al. 2020 (DEWA R&D; WIT Trans. Ecol. Env. 249, doi:10.2495/SC200081) Table 4 lists the Al Sa'fat SC limits as SHGC ~0.35/0.28/0.22, i.e. SHGC = 0.87 x SC (3 mm clear-glass reference)."
     phase: 2
   infiltration_ach:
-    value: null
-    unit: air changes per hour (range)
-    source: null
-    date_checked: null
+    value: {before_2005: {low: 0.4, central: 0.7, high: 1.0}, "2005_2014": {low: 0.3, central: 0.5, high: 0.8}, "2015_2021": {low: 0.2, central: 0.35, high: 0.6}, "2022_plus": {low: 0.1, central: 0.25, high: 0.4}}
+    unit: air changes per hour (natural infiltration, annual average)
+    source: https://www.wkcgroup.com/wp-content/uploads/2023/04/Al-Safat-Dubai-Green-Building-Evaluation-System.pdf
+    date_checked: 2026-10-03
     verify: true
-    notes: Range for Dubai apartment towers by era.
+    notes: "MODELLING ASSUMPTION. Anchor: Al Sa'fat 501.05 limits air leakage to 10 m3/h per m2 of envelope at 50 Pa (buildings >= 1 MW cooling) and 501.06 requires a leakage test for conditioned buildings, so the newest band is tightest. No measured infiltration data for Dubai apartments was found; real bills should calibrate this."
     phase: 2
   fresh_air_pretreated_share:
-    value: null
-    unit: fraction of buildings by era
-    source: null
-    date_checked: null
+    value: {before_2005: 0.2, "2005_2014": 0.5, "2015_2021": 0.9, "2022_plus": 1.0}
+    unit: probability that outdoor air is pre-treated centrally (its load is not on the unit meter)
+    source: https://www.wkcgroup.com/wp-content/uploads/2023/04/Al-Safat-Dubai-Green-Building-Evaluation-System.pdf
+    date_checked: 2026-10-03
     verify: true
-    notes: Share of buildings where a central fresh-air unit pre-cools outdoor air (load not seen by the unit meter).
+    notes: "Al Sa'fat 501.03: new air-conditioned buildings must have a central ventilation system supplying fresh air, hence ~1.0 for recent stock. Shares for older bands are a MODELLING ASSUMPTION (largest single source of unit-meter uncertainty; plan risk #3)."
+    phase: 2
+  untreated_ventilation_fraction:
+    value: {low: 0.25, central: 0.5, high: 0.75}
+    unit: fraction of the ASHRAE 62.2 whole-dwelling rate entering untreated (when not pre-treated)
+    source: https://www.ashrae.org/file%20library/technical%20resources/standards%20and%20guidelines/standards%20addenda/62_2_2013_m_20151109.pdf
+    date_checked: 2026-10-03
+    verify: true
+    notes: "How much of the ASHRAE 62.2 rate reaches the unit coil untreated (kitchen/bath exhaust make-up air) in buildings without central pre-treatment is a MODELLING ASSUMPTION."
+    phase: 2
+  ashrae_622_ventilation:
+    value: {per_m2_floor_ls: 0.15, per_person_ls: 3.5}
+    unit: "L/s; Qtot = per_m2 x A_floor + per_person x (bedrooms + 1)"
+    source: https://www.ashrae.org/file%20library/technical%20resources/standards%20and%20guidelines/standards%20addenda/62_2_2013_m_20151109.pdf
+    date_checked: 2026-10-03
+    verify: false
+    notes: "ASHRAE 62.2 Eq. 4.1b (SI), read in the official addendum m PDF. Al Sa'fat 401.01 requires ASHRAE 62 compliance."
     phase: 2
   indoor_humidity_target:
-    value: null
-    unit: relative humidity fraction at setpoint
-    source: null
-    date_checked: null
+    value: {low: 0.45, central: 0.50, high: 0.55}
+    unit: relative humidity fraction at the cooling setpoint
+    source: https://www.wkcgroup.com/wp-content/uploads/2023/04/Al-Safat-Dubai-Green-Building-Evaluation-System.pdf
+    date_checked: 2026-10-03
     verify: true
-    notes: Used for the simplified latent load.
+    notes: "Al Sa'fat 501.03 indoor design condition: 24 C dry bulb, relative humidity 50 +/- 5%."
     phase: 2
-  people_sensible_gain:
-    value: null
-    unit: W per person
-    source: null
-    date_checked: null
+  people_gains:
+    value: {awake_sensible_w: 72, awake_latent_w: 45, resting_sensible_w: 66, resting_latent_w: 31}
+    unit: W per person (adjusted adult male/female mix)
+    source: https://www.tagengineering.ca/wp-content/uploads/2015/01/1997-Fundamentals_28.pdf
+    date_checked: 2026-10-03
     verify: true
-    notes: Residential activity level (ASHRAE Fundamentals).
-    phase: 2
-  people_latent_gain:
-    value: null
-    unit: W per person
-    source: null
-    date_checked: null
-    verify: true
-    notes: Residential activity level (ASHRAE Fundamentals).
+    notes: "1997 ASHRAE Fundamentals Ch. 28 Table 3: 'Seated, very light work - offices, hotels, apartments' 245 Btu/h sensible, 155 Btu/h latent (72 W / 45 W); 'Seated at theater' 225/105 Btu/h (66 W / 31 W) used for night-time resting. Newer editions should be checked."
     phase: 2
   appliance_lighting_gain:
-    value: null
-    unit: W per m2 (range, with schedule)
-    source: null
-    date_checked: null
+    value: {low: 1.5, central: 3.0, high: 5.0, profile_w_m2: {"07-17": 8.0, "17-23": 20.0, "23-07": 2.0}}
+    unit: W/m2 daily mean (appliances + lighting, sensible); profile = ISO hourly shape
+    source: https://www.sysecol2.ethz.ch/OptiControl/LiteratureOC/ISO_07_FDIS_13790_ApprovalDraft.pdf
+    date_checked: 2026-10-03
     verify: true
-    notes: Residential plug and lighting loads.
+    notes: "ISO 13790 Table G.7 (residential, occupants + appliances): living room + kitchen 8 W/m2 (07-17), 20 (17-23), 2 (23-07), mean 9; other rooms mean 2.7-3.8. The shape is used for appliances; the low/central/high mean excluding occupants is a MODELLING ASSUMPTION anchored on those totals."
     phase: 2
   orientation_effect_literature:
     value: null
-    unit: percent cooling load difference, west vs north (published range)
-    source: null
+    unit: percent cooling difference by orientation (published, sanity check only)
+    source: https://doi.org/10.3390/buildings14040876
     date_checked: null
     verify: true
-    notes: Sanity check only, never a model input. A UAE case study reports about 17% west vs optimum (found via search, primary paper not yet opened).
+    notes: "Left null: paper could not be opened. Search snippet of 'Smarter Window Selection for Smarter Energy Consumption: The Case of the UAE' (Buildings 2024, 14(4) 876): north-facing windows use 36% less annual energy than the other three directions; east- and west-facing windows use about 41% and 35% more daily cooling energy in August than north- and south-facing windows. Window-only effects; a whole unit's difference should be smaller. Compared in docs/phase2_physics.md."
     phase: 2
 
 schedules:
   uae_weekend:
-    value: null
-    unit: weekday names
-    source: null
-    date_checked: null
+    value: [Saturday, Sunday]
+    unit: weekend days (Friday afternoon off for the federal government)
+    source: https://www.aljazeera.com/economy/2021/12/7/uae-announces-changes-to-workweek-for-employees-of-govt-sector
+    date_checked: 2026-10-03
     verify: true
-    notes: Brief says Saturday-Sunday; confirm effective date and private-sector practice.
+    notes: "From 1 Jan 2022 the federal government moved to a Saturday-Sunday weekend with a Friday half day; private-sector adoption varied (search snippets of the announcement coverage). All weather years (2023-25) are after the change."
     phase: 2
   ramadan_dates:
-    value: null
-    unit: mapping year -> [start YYYY-MM-DD, end YYYY-MM-DD]
-    source: null
-    date_checked: null
+    value: {2023: ["2023-03-23", "2023-04-20"], 2024: ["2024-03-11", "2024-04-09"], 2025: ["2025-03-01", "2025-03-29"]}
+    unit: first and last day of Ramadan (inclusive)
+    source: https://en.wikipedia.org/wiki/Ramadan
+    date_checked: 2026-10-03
     verify: true
-    notes: Needed for the optional Ramadan schedule, weather years 2023-2025.
+    notes: "2024 and 2025 from Wikipedia's Umm al-Qura table (opened); 2023 from Al Arabiya's expected dates (search snippet). UAE moon-sighting can shift dates by a day. Used only by the optional Ramadan schedule."
     phase: 2
 
 data_sources:

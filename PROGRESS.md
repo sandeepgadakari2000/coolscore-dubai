@@ -4,14 +4,43 @@
 |---|---|---|
 | 0 | Plan + user-research kit + skeleton | ✅ Done 2026-10-03 (plan approved; D1–D8 as recommended) |
 | 1 | Weather + sun | ✅ Done 2026-10-03 |
-| 2 | Physics engine (5R1C) | ⏳ Waiting for "go" |
-| 3 | Billing engine | — |
+| 2 | Physics engine (5R1C) | ✅ Done 2026-10-03 |
+| 3 | Billing engine | ⏳ Waiting for "go" |
 | 4 | Simulation + surrogate + CoolScore bands | — |
 | 5 | App core (Check, Compare, Investor, Methodology) | — |
 | 6 | Developer View, Listing Badge, API | — |
 | 7 | AI layer (parser, explanations, fallback) | — |
 | 8 | Business layer + real-bill validation | — |
 | 9 | Ship | — |
+
+## Phase 2 (2026-10-03): physics engine
+
+**Done**
+- Researched archetypes from primary or near-primary sources: Al Sa'fat text (walls 0.57, roof 0.30, glazing
+  by WWR band, 24 °C / 50% RH design, air-leakage rules), DEWA R&D 2020 paper (2014 mandate year), the
+  ISO 13790 final draft (5R1C constants, Table 12, F_w, frame fraction, sky radiation), ASHRAE 1997 Ch. 28
+  (occupant gains, latent factor), ASHRAE 62.2 (ventilation), a Dubai wall study (U 1.65 uninsulated) and
+  manufacturer glass data. Unsourced spreads are labelled MODELLING ASSUMPTION.
+- Finding: the post-2014 and post-2022 eras share the same legal envelope limits; Al Sa'fat adds
+  thermal-bridge and air-tightness rules.
+- Engine: `physics.params` (listing → unit parameters, central or sampled hidden variables),
+  `physics.rc5r1c` (vectorised ISO 13790 5R1C, latent load, balcony and neighbour shading, schedules,
+  away behaviour, window opening), `physics.reference` (literal ISO Annex C oracle).
+- Verified: vectorised = literal ISO to 1e-6 W; steady state = analytic conductance; all six §9 invariants pass.
+- Orientation (typical 1-bed, central site): north cheapest; E/W +4% in summer, +7% annually; south +11%
+  annually (winter sun). **West ≈ east in energy (−0.1%)** but +2.5% in design peak, which is reported honestly
+  rather than forced. Literature (window-only, snippet) points the same way with bigger numbers.
+- Stock spread (2,000 sampled units): median 274 → 119 kWh_th/m²/yr from pre-2005 to 2022+; latent ≈ 35%.
+- Speed: 2,000 units × 8,784 h ≈ 10 s, so 40,000 scenarios ≈ 3–4 min.
+
+**Tests:** 94 passing (19 new for Phase 2).
+
+**For Sandeep to verify:** `config/archetypes.yaml` and the `physics:` block of `config/assumptions.yaml`,
+especially infiltration and pre-treated fresh-air shares (the biggest drivers of the latent share).
+
+**Next (Phase 3):** billing engine with primary-source tariffs (DEWA slabs and fuel surcharge, district cooling
+capacity and consumption, VAT), DEWA AC electricity via COP and the stored load × (T − 35 °C) term, chiller-free
+and service-charge cases.
 
 ## Phase 1 (2026-10-03): weather + sun
 
@@ -57,5 +86,6 @@ schedules, invariant tests, orientation effect vs published UAE studies.
 **Sandeep's to-do now:** start outreach (`docs/user-research/outreach_messages.md`); ask every tenant for typed bill figures.
 
 ## Assumption register status
-Filled: RT→kW (NIST SP 811), ground albedo range, Open-Meteo terms, NOAA ISD source, weather bias-correction method.
-All tariff, envelope and behaviour values remain `null` placeholders until their phase researches them.
+Filled: constants, weather (Phase 1), all physics and schedule records (Phase 2), archetypes A1–A4.
+Still null: all billing tariffs (Phase 3), sanity bands (Phase 8), business (Phase 8), orientation literature
+(paper not openable), permit-to-completion lag.

@@ -1,10 +1,15 @@
-# Building archetypes by completion era.
-# Numeric parameters use the same record schema as assumptions.yaml and stay null
-# until Phase 2 researches them from Dubai Municipality / Al Sa'fat documents and
-# peer-reviewed UAE studies.
+# Building archetypes by completion era (Phase 2, researched 2026-10-03).
+# Numeric parameters use the assumption-record schema (see assumptions.yaml).
+# Ranges are {low, central, high}; simulation samples within them as hidden variation.
+#
+# Key finding: Dubai's prescriptive envelope limits have been the same since the
+# Green Building Regulations became compulsory in 2014; Al Sa'fat kept them and
+# added thermal-bridge elimination and air-leakage testing. So A3 and A4 share
+# the limits and differ mainly in thermal bridging and air tightness.
 
 # Design choice (categories we define, not a sourced fact): completion-year bands.
-# Edges will be revisited once the regulation milestone dates below are sourced.
+# Completion lags permits by a few years, so each band mostly reflects the rules
+# in force a few years before its start.
 era_bands:
   "before_2005": [null, 2004]
   "2005_2014": [2005, 2014]
@@ -13,28 +18,28 @@ era_bands:
 
 regulation_milestones:
   dm_thermal_insulation_rules:
-    value: null
-    unit: year in force
-    source: null
-    date_checked: null
+    value: 2003
+    unit: year issued
+    source: https://www.wkcgroup.com/wp-content/uploads/2023/04/Al-Safat-Dubai-Green-Building-Evaluation-System.pdf
+    date_checked: 2026-10-03
     verify: true
-    notes: Early Dubai Municipality thermal insulation requirements for walls/roofs/glazing.
+    notes: "Al Sa'fat 101.03 revokes 'Administrative Resolution No. 66, of the year 2003, approving Regulations on the Technical Specifications for Thermal Insulation Systems'."
     phase: 2
   green_building_regulations_mandatory:
-    value: null
-    unit: year in force for all new buildings
-    source: null
-    date_checked: null
+    value: 2014
+    unit: year compulsory for all new buildings
+    source: https://www.witpress.com/Secure/elibrary/papers/SC20/SC20008FU1.pdf
+    date_checked: 2026-10-03
     verify: true
-    notes: Dubai Green Building Regulations & Specifications (launched ~2011; mandatory for all new buildings ~2014 per secondary sources).
+    notes: "Rodriguez-Ubinas et al. 2020 (DEWA R&D): DEWA and DM introduced the Green Building Regulations and Specifications in 2011, mandatory first for government buildings, 'In 2014, they became compulsory for all the Dubai buildings'; Al Sa'fat launched two years later. Its Table 4 gives 2014 as the year of mandate for the Al Sa'fat envelope values."
     phase: 2
   al_safat_mandatory:
-    value: null
-    unit: date in force
-    source: null
-    date_checked: null
+    value: {launched: 2016, silver_mandatory: 2020}
+    unit: year
+    source: https://www.witpress.com/Secure/elibrary/papers/SC20/SC20008FU1.pdf
+    date_checked: 2026-10-03
     verify: true
-    notes: Al Sa'fat Dubai Green Building System; a secondary source says it replaced the previous regulations from 19 Oct 2020. Silver Sa'fa is the mandatory level.
+    notes: "Launch per Rodriguez-Ubinas et al. 2020. Silver Sa'fa mandatory for all buildings under Administrative Resolution 154 of 2020 (search snippet; resolution not opened)."
     phase: 2
   permit_to_completion_lag:
     value: null
@@ -42,33 +47,151 @@ regulation_milestones:
     source: null
     date_checked: null
     verify: true
-    notes: Typical lag between building permit (rules apply) and completion (what tenants know). May have to stay a labelled assumption.
+    notes: Not needed by the engine (bands are fixed); left as a placeholder until a source on Dubai tower delivery times is found.
     phase: 2
+
+glazing_code_limits:
+  value:
+    - {wwr_max: 0.40, u: 2.1, sc: 0.40}
+    - {wwr_max: 0.60, u: 1.9, sc: 0.32}
+    - {wwr_max: 1.00, u: 1.9, sc: 0.25}
+  unit: "u in W/m2K (summer U-value, max); sc = shading coefficient (max); by window-to-wall ratio band"
+  source: https://www.wkcgroup.com/wp-content/uploads/2023/04/Al-Safat-Dubai-Green-Building-Evaluation-System.pdf
+  date_checked: 2026-10-03
+  verify: true
+  notes: "Al Sa'fat 501.01 B (Bronze/Silver): WWR <= 40%: U 2.1, SC 0.4; 40-60%: U 1.9, SC 0.32; >= 60%: U 1.9, SC 0.25. Same values listed with a 2014 mandate year by Rodriguez-Ubinas et al. 2020. Walls 0.57 and roof 0.30 W/m2K."
+  phase: 2
 
 archetypes:
   A1:
     era_band: "before_2005"
     label: Older low/mid-rise
-    description: Concrete block, little insulation, smaller tinted windows; often DEWA-billed AC (qualitative, to verify).
-    params: &params_placeholder
-      wall_u:          {value: null, unit: W/m2K, source: null, date_checked: null, verify: true, notes: range, phase: 2}
-      roof_u:          {value: null, unit: W/m2K, source: null, date_checked: null, verify: true, notes: range, phase: 2}
-      glazing_u:       {value: null, unit: W/m2K, source: null, date_checked: null, verify: true, notes: range, phase: 2}
-      glazing_shgc:    {value: null, unit: fraction, source: null, date_checked: null, verify: true, notes: range, phase: 2}
-      typical_wwr:     {value: null, unit: fraction, source: null, date_checked: null, verify: true, notes: range, phase: 2}
-      infiltration_ach: {value: null, unit: 1/h, source: null, date_checked: null, verify: true, notes: range, phase: 2}
+    description: Uninsulated concrete block, single tinted glazing; mostly built before the 2003 insulation rules took effect.
+    params:
+      wall_u:
+        value: {low: 1.4, central: 1.65, high: 2.2}
+        unit: W/m2K
+        source: https://www.avestia.com/CSEE2017_Proceedings/files/paper/AWSPT/AWSPT_127.pdf
+        date_checked: 2026-10-03
+        verify: true
+        notes: "Touqan, Taleb & Salameh 2017 (CSEE'17, doi:10.11159/awspt17.127): Dubai base-case 20 cm concrete block wall U = 1.65 W/m2K (uninsulated). Range around it is a MODELLING ASSUMPTION for other block types and render."
+        phase: 2
+      roof_u:
+        value: {low: 0.44, central: 0.7, high: 1.2}
+        unit: W/m2K
+        source: https://www.sciencedirect.com/science/article/abs/pii/S037877881100449X
+        date_checked: 2026-10-03
+        verify: true
+        notes: "Friess et al. 2012 (Energy and Buildings 44:26-32), search snippet: 2001/2003 legislation set roofs to U = 0.44. Older roofs above that limit are a MODELLING ASSUMPTION. Affects top-floor units only."
+        phase: 2
+      glazing_u:
+        value: {low: 5.5, central: 5.8, high: 5.9}
+        unit: W/m2K
+        source: https://www.viridianglass.com/wp-content/uploads/2024/03/Viridian-Performance-Data-Single-Glazing.pdf
+        date_checked: 2026-10-03
+        verify: true
+        notes: "Manufacturer data for 6 mm single tinted float glass: U 5.8 (grey, bronze), 5.5-5.7 for other single products."
+        phase: 2
+      glazing_shgc:
+        value: {low: 0.36, central: 0.58, high: 0.66}
+        unit: fraction
+        source: https://www.viridianglass.com/wp-content/uploads/2024/03/Viridian-Performance-Data-Single-Glazing.pdf
+        date_checked: 2026-10-03
+        verify: true
+        notes: "Same data: 6 mm grey 0.58, light grey 0.66, bronze 0.65, dark 'SuperGrey' 0.36."
+        phase: 2
   A2:
     era_band: "2005_2014"
     label: Boom-era glass high-rise
-    description: High glass ratio or curtain wall, tinted/reflective double glazing; mostly district cooling (qualitative, to verify).
-    params: *params_placeholder
+    description: Built under the 2003 insulation rules; insulated block but uninsulated concrete frame (thermal bridges); tinted/reflective double glazing.
+    params:
+      wall_u:
+        value: {low: 0.57, central: 0.9, high: 1.3}
+        unit: W/m2K (effective, including thermal bridges)
+        source: https://www.sciencedirect.com/science/article/abs/pii/S037877881100449X
+        date_checked: 2026-10-03
+        verify: true
+        notes: "Friess et al. 2012 (snippet): the 2003 limit is U 0.57 met with insulated block, but the reinforced-concrete frame typically stays uninsulated and over half the wall area acts as a thermal bridge. Effective values above 0.57 are a MODELLING ASSUMPTION."
+        phase: 2
+      roof_u:
+        value: {low: 0.30, central: 0.44, high: 0.6}
+        unit: W/m2K
+        source: https://www.sciencedirect.com/science/article/abs/pii/S037877881100449X
+        date_checked: 2026-10-03
+        verify: true
+        notes: "2003 roof limit 0.44 (Friess et al. 2012, snippet); spread is a MODELLING ASSUMPTION."
+        phase: 2
+      glazing_u:
+        value: {low: 2.1, central: 2.8, high: 3.3}
+        unit: W/m2K
+        source: https://www.sciencedirect.com/science/article/abs/pii/S037877881100449X
+        date_checked: 2026-10-03
+        verify: true
+        notes: "Friess et al. 2012 (snippet): 2003 rules capped glazing U at 3.28 for glazing-to-wall < 40% and 2.1 above 40%."
+        phase: 2
+      glazing_shgc:
+        value: {low: 0.25, central: 0.35, high: 0.46}
+        unit: fraction
+        source: https://www.viridianglass.com/wp-content/uploads/2024/03/Viridian-Performance-Data-Single-Glazing.pdf
+        date_checked: 2026-10-03
+        verify: true
+        notes: "MODELLING ASSUMPTION for reflective/tinted coated glazing of the period, anchored on manufacturer data for coated tinted glass (SHGC 0.37-0.46) and the later Al Sa'fat SC 0.4 (SHGC ~0.35) limit."
+        phase: 2
   A3:
     era_band: "2015_2021"
     label: Green Building Regulations era
-    description: Mandatory envelope limits; double low-e glazing (qualitative, to verify).
-    params: *params_placeholder
+    description: Prescriptive limits compulsory since 2014 (walls 0.57, roof 0.30, glazing by WWR band); frame thermal bridges still common.
+    params:
+      wall_u:
+        value: {low: 0.57, central: 0.75, high: 1.0}
+        unit: W/m2K (effective, including thermal bridges)
+        source: https://www.witpress.com/Secure/elibrary/papers/SC20/SC20008FU1.pdf
+        date_checked: 2026-10-03
+        verify: true
+        notes: "Limit 0.57 (Rodriguez-Ubinas et al. 2020 Table 3). Thermal-bridge allowance above the limit is a MODELLING ASSUMPTION (Friess et al. 2012 describe uninsulated frames)."
+        phase: 2
+      roof_u:
+        value: {low: 0.25, central: 0.30, high: 0.30}
+        unit: W/m2K
+        source: https://www.witpress.com/Secure/elibrary/papers/SC20/SC20008FU1.pdf
+        date_checked: 2026-10-03
+        verify: true
+        notes: Roof limit 0.30 W/m2K.
+        phase: 2
+      glazing_compliance:
+        value: {low: 0.8, central: 0.95, high: 1.1}
+        unit: multiplier on the code SHGC limit for the unit's WWR band (glazing U taken at the code limit)
+        source: https://www.wkcgroup.com/wp-content/uploads/2023/04/Al-Safat-Dubai-Green-Building-Evaluation-System.pdf
+        date_checked: 2026-10-03
+        verify: true
+        notes: "Code limits from glazing_code_limits. Values below 1 = better than code; above 1 = non-compliance. Spread is a MODELLING ASSUMPTION."
+        phase: 2
   A4:
     era_band: "2022_plus"
     label: Al Sa'fat era
-    description: Silver Sa'fa minimum envelope and glazing limits (qualitative, to verify).
-    params: *params_placeholder
+    description: Same envelope limits as A3, plus Al Sa'fat 501.02 thermal-bridge elimination and 501.05/06 air-leakage testing.
+    params:
+      wall_u:
+        value: {low: 0.45, central: 0.57, high: 0.65}
+        unit: W/m2K (effective)
+        source: https://www.wkcgroup.com/wp-content/uploads/2023/04/Al-Safat-Dubai-Green-Building-Evaluation-System.pdf
+        date_checked: 2026-10-03
+        verify: true
+        notes: "Al Sa'fat 501.01 A wall limit 0.57 (Silver); 501.02 requires thermal bridges to be eliminated or insulated, so the effective value sits near the limit. Spread is a MODELLING ASSUMPTION."
+        phase: 2
+      roof_u:
+        value: {low: 0.25, central: 0.30, high: 0.30}
+        unit: W/m2K
+        source: https://www.wkcgroup.com/wp-content/uploads/2023/04/Al-Safat-Dubai-Green-Building-Evaluation-System.pdf
+        date_checked: 2026-10-03
+        verify: true
+        notes: Al Sa'fat 501.01 A roof limit 0.3 W/m2K.
+        phase: 2
+      glazing_compliance:
+        value: {low: 0.75, central: 0.9, high: 1.0}
+        unit: multiplier on the code SHGC limit for the unit's WWR band (glazing U taken at the code limit)
+        source: https://www.wkcgroup.com/wp-content/uploads/2023/04/Al-Safat-Dubai-Green-Building-Evaluation-System.pdf
+        date_checked: 2026-10-03
+        verify: true
+        notes: "Compliance assumed (Silver mandatory, tested). Spread is a MODELLING ASSUMPTION."
+        phase: 2
