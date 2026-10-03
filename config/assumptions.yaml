@@ -1,0 +1,250 @@
+# CoolScore assumption register.
+# Every real-world number used anywhere in CoolScore lives here, and nowhere else.
+#
+# Each record has exactly these fields:
+#   value         number, list or mapping; null = PLACEHOLDER, not yet researched
+#   unit          physical or currency unit
+#   source        URL of the primary source (null while value is null)
+#   date_checked  YYYY-MM-DD when the source was last opened (null if never)
+#   verify        true until Sandeep has personally confirmed the value
+#   notes         context, caveats, competing figures
+#   phase         build phase that researches / first uses it
+#
+# Rule: code must refuse to run a stage whose required records are still null.
+# Tests (tests/test_config.py) enforce the schema.
+
+constants:
+  rt_to_kw_thermal:
+    value: 3.516853
+    unit: kW thermal per refrigeration ton (so 1 RTh = 3.516853 kWh thermal)
+    source: https://www.nist.gov/pml/special-publication-811/nist-guide-si-appendix-b-conversion-factors/nist-guide-si-appendix-b9
+    date_checked: 2026-10-03
+    verify: false
+    notes: Definition, not a tariff. NIST SP 811 Appendix B.9 lists ton of refrigeration (12 000 Btu_IT/h) = 3.516 853 E+03 W.
+    phase: 3
+
+billing:
+  vat_rate:
+    value: null
+    unit: fraction
+    source: null
+    date_checked: null
+    verify: true
+    notes: UAE VAT on utility bills; confirm rate and that it applies to district cooling and DEWA electricity. Applied exactly once to the bill total.
+    phase: 3
+
+  dewa:
+    residential_electricity_slabs:
+      value: null
+      unit: list of {upto_kwh_per_month, aed_per_kwh}
+      source: null
+      date_checked: null
+      verify: true
+      notes: Candidate primary source https://www.dewa.gov.ae/en/consumer/billing/slab-tariff (not yet opened). Check expat vs national tariffs.
+      phase: 3
+    fuel_surcharge:
+      value: null
+      unit: AED per kWh
+      source: null
+      date_checked: null
+      verify: true
+      notes: Fuel surcharge added per kWh on DEWA electricity bills; confirm current value.
+      phase: 3
+    baseline_household_kwh:
+      value: null
+      unit: kWh per month by bedrooms (non-cooling use)
+      source: null
+      date_checked: null
+      verify: true
+      notes: Baseline consumption on which marginal cooling kWh is stacked to pick the right slab. May need to be a labelled assumption if no statistic exists.
+      phase: 3
+
+  district_cooling:
+    consumption_charge:
+      value: null
+      unit: AED per RTh
+      source: null
+      date_checked: null
+      verify: true
+      notes: "Third-party blogs (rentincreaseuae.com, MyBayut) quote 0.568 AED/RTh with no citation; NOT used. Primary source to open: https://www.empower.ae/customer-care/charges-explanation/ (redirected on 2026-10-03)."
+      phase: 3
+    capacity_charge:
+      value: null
+      unit: AED per RT per year
+      source: null
+      date_checked: null
+      verify: true
+      notes: "Charged even at zero consumption. Blogs quote 750 AED/RT/yr uncited; NOT used. Confirm with provider and the Dubai regulator."
+      phase: 3
+    fuel_surcharge:
+      value: null
+      unit: to be determined (AED per RTh or percent)
+      source: null
+      date_checked: null
+      verify: true
+      notes: Whether and how a fuel surcharge applies to district cooling is unconfirmed (one blog claims a fixed percentage).
+      phase: 3
+    meter_admin_fee:
+      value: null
+      unit: AED per month
+      source: null
+      date_checked: null
+      verify: true
+      notes: Meter maintenance / billing fees.
+      phase: 3
+    contracted_capacity_method:
+      value: null
+      unit: sq ft per RT, or multiple of simulated design peak load
+      source: null
+      date_checked: null
+      verify: true
+      notes: How contracted RT per unit is set. Best evidence will be contracted_capacity_rt on real bills.
+      phase: 3
+
+  equipment:
+    split_ac_rated_cop:
+      value: null
+      unit: W thermal per W electric at rating conditions
+      source: null
+      date_checked: null
+      verify: true
+      notes: UAE minimum efficiency / star-rating standard (ESMA / MoIAT) and typical installed range.
+      phase: 3
+    cop_derate_per_k_above_rating:
+      value: null
+      unit: fraction per K
+      source: null
+      date_checked: null
+      verify: true
+      notes: Efficiency drop at high outdoor temperature.
+      phase: 3
+    fcu_fan_power:
+      value: null
+      unit: W electric per kW thermal of cooling delivered
+      source: null
+      date_checked: null
+      verify: true
+      notes: In-unit fan coil fans, billed by DEWA even when chiller-free.
+      phase: 3
+
+physics:
+  ground_albedo:
+    value: null
+    unit: fraction
+    source: null
+    date_checked: null
+    verify: true
+    notes: Ground reflectance for facade irradiance (urban paving / sand).
+    phase: 1
+  thermal_mass_class:
+    value: null
+    unit: ISO 13790 class -> Am (m2 per m2 floor), Cm (J/K per m2 floor)
+    source: null
+    date_checked: null
+    verify: true
+    notes: ISO 13790:2008 Table 12 class values for concrete-frame apartments.
+    phase: 2
+  infiltration_ach:
+    value: null
+    unit: air changes per hour (range)
+    source: null
+    date_checked: null
+    verify: true
+    notes: Range for Dubai apartment towers by era.
+    phase: 2
+  fresh_air_pretreated_share:
+    value: null
+    unit: fraction of buildings by era
+    source: null
+    date_checked: null
+    verify: true
+    notes: Share of buildings where a central fresh-air unit pre-cools outdoor air (load not seen by the unit meter).
+    phase: 2
+  indoor_humidity_target:
+    value: null
+    unit: relative humidity fraction at setpoint
+    source: null
+    date_checked: null
+    verify: true
+    notes: Used for the simplified latent load.
+    phase: 2
+  people_sensible_gain:
+    value: null
+    unit: W per person
+    source: null
+    date_checked: null
+    verify: true
+    notes: Residential activity level (ASHRAE Fundamentals).
+    phase: 2
+  people_latent_gain:
+    value: null
+    unit: W per person
+    source: null
+    date_checked: null
+    verify: true
+    notes: Residential activity level (ASHRAE Fundamentals).
+    phase: 2
+  appliance_lighting_gain:
+    value: null
+    unit: W per m2 (range, with schedule)
+    source: null
+    date_checked: null
+    verify: true
+    notes: Residential plug and lighting loads.
+    phase: 2
+  orientation_effect_literature:
+    value: null
+    unit: percent cooling load difference, west vs north (published range)
+    source: null
+    date_checked: null
+    verify: true
+    notes: Sanity check only, never a model input. A UAE case study reports about 17% west vs optimum (found via search, primary paper not yet opened).
+    phase: 2
+
+schedules:
+  uae_weekend:
+    value: null
+    unit: weekday names
+    source: null
+    date_checked: null
+    verify: true
+    notes: Brief says Saturday-Sunday; confirm effective date and private-sector practice.
+    phase: 2
+  ramadan_dates:
+    value: null
+    unit: mapping year -> [start YYYY-MM-DD, end YYYY-MM-DD]
+    source: null
+    date_checked: null
+    verify: true
+    notes: Needed for the optional Ramadan schedule, weather years 2023-2025.
+    phase: 2
+
+data_sources:
+  open_meteo_terms:
+    value: null
+    unit: licence summary
+    source: https://open-meteo.com/en/terms
+    date_checked: 2026-10-03
+    verify: true
+    notes: "Read 2026-10-03: free API is for non-commercial use only (<10,000 calls/day); data licensed CC BY 4.0 with attribution. Commercial use needs a paid plan. Value set once Phase 1 records the exact endpoint/model used."
+    phase: 1
+
+sanity_bands:
+  typical_monthly_bills_by_bedrooms:
+    value: null
+    unit: AED per month (range) by bedrooms and season
+    source: null
+    date_checked: null
+    verify: true
+    notes: Rough bands from reputable guides only; published guides disagree with each other (see docs/competitive_landscape.md).
+    phase: 8
+
+business:
+  placeholder:
+    value: null
+    unit: n/a
+    source: null
+    date_checked: null
+    verify: true
+    notes: Pricing, unit economics and P&L assumptions are added in Phase 8, each marked as an assumption.
+    phase: 8

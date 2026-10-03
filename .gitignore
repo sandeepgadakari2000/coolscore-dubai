@@ -1,0 +1,18 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.venv/
+venv/
+
+# Secrets (never commit)
+.env
+.streamlit/secrets.toml
+
+# Regenerable pipeline outputs (demo artifacts under data/demo/ ARE committed)
+data/simulated/*
+!data/simulated/.gitkeep
+
+# Local tool state
+.claude/settings.local.json

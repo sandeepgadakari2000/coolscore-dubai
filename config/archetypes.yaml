@@ -1,0 +1,74 @@
+# Building archetypes by completion era.
+# Numeric parameters use the same record schema as assumptions.yaml and stay null
+# until Phase 2 researches them from Dubai Municipality / Al Sa'fat documents and
+# peer-reviewed UAE studies.
+
+# Design choice (categories we define, not a sourced fact): completion-year bands.
+# Edges will be revisited once the regulation milestone dates below are sourced.
+era_bands:
+  "before_2005": [null, 2004]
+  "2005_2014": [2005, 2014]
+  "2015_2021": [2015, 2021]
+  "2022_plus": [2022, null]
+
+regulation_milestones:
+  dm_thermal_insulation_rules:
+    value: null
+    unit: year in force
+    source: null
+    date_checked: null
+    verify: true
+    notes: Early Dubai Municipality thermal insulation requirements for walls/roofs/glazing.
+    phase: 2
+  green_building_regulations_mandatory:
+    value: null
+    unit: year in force for all new buildings
+    source: null
+    date_checked: null
+    verify: true
+    notes: Dubai Green Building Regulations & Specifications (launched ~2011; mandatory for all new buildings ~2014 per secondary sources).
+    phase: 2
+  al_safat_mandatory:
+    value: null
+    unit: date in force
+    source: null
+    date_checked: null
+    verify: true
+    notes: Al Sa'fat Dubai Green Building System; a secondary source says it replaced the previous regulations from 19 Oct 2020. Silver Sa'fa is the mandatory level.
+    phase: 2
+  permit_to_completion_lag:
+    value: null
+    unit: years
+    source: null
+    date_checked: null
+    verify: true
+    notes: Typical lag between building permit (rules apply) and completion (what tenants know). May have to stay a labelled assumption.
+    phase: 2
+
+archetypes:
+  A1:
+    era_band: "before_2005"
+    label: Older low/mid-rise
+    description: Concrete block, little insulation, smaller tinted windows; often DEWA-billed AC (qualitative, to verify).
+    params: &params_placeholder
+      wall_u:          {value: null, unit: W/m2K, source: null, date_checked: null, verify: true, notes: range, phase: 2}
+      roof_u:          {value: null, unit: W/m2K, source: null, date_checked: null, verify: true, notes: range, phase: 2}
+      glazing_u:       {value: null, unit: W/m2K, source: null, date_checked: null, verify: true, notes: range, phase: 2}
+      glazing_shgc:    {value: null, unit: fraction, source: null, date_checked: null, verify: true, notes: range, phase: 2}
+      typical_wwr:     {value: null, unit: fraction, source: null, date_checked: null, verify: true, notes: range, phase: 2}
+      infiltration_ach: {value: null, unit: 1/h, source: null, date_checked: null, verify: true, notes: range, phase: 2}
+  A2:
+    era_band: "2005_2014"
+    label: Boom-era glass high-rise
+    description: High glass ratio or curtain wall, tinted/reflective double glazing; mostly district cooling (qualitative, to verify).
+    params: *params_placeholder
+  A3:
+    era_band: "2015_2021"
+    label: Green Building Regulations era
+    description: Mandatory envelope limits; double low-e glazing (qualitative, to verify).
+    params: *params_placeholder
+  A4:
+    era_band: "2022_plus"
+    label: Al Sa'fat era
+    description: Silver Sa'fa minimum envelope and glazing limits (qualitative, to verify).
+    params: *params_placeholder

@@ -1,0 +1,61 @@
+# Microclimate sites and community -> microclimate mapping.
+# Coordinates are approximate area centres (WGS84) used only to fetch weather.
+# Mapping rule (design choice, verify: true): distance from the Gulf coast
+#   < ~3 km -> coastal, ~3-12 km -> central, > ~12 km -> inland.
+# Phase 1 may merge sites if the weather data cannot tell them apart.
+
+microclimates:
+  coastal:
+    label: Coastal (Dubai Marina area)
+    lat: 25.080
+    lon: 55.140
+  central:
+    label: Central (Downtown / Business Bay area)
+    lat: 25.190
+    lon: 55.270
+  inland:
+    label: Inland (Dubai South area)
+    lat: 24.900
+    lon: 55.160
+
+mapping_verify: true
+
+communities:
+  # coastal
+  Dubai Marina: coastal
+  Jumeirah Beach Residence (JBR): coastal
+  Jumeirah Lake Towers (JLT): coastal
+  Palm Jumeirah: coastal
+  Dubai Harbour: coastal
+  Bluewaters Island: coastal
+  Al Sufouh: coastal
+  Deira: coastal
+  # central
+  Downtown Dubai: central
+  Business Bay: central
+  DIFC: central
+  Sheikh Zayed Road / Trade Centre: central
+  Al Barsha: central
+  Barsha Heights (Tecom): central
+  Bur Dubai: central
+  Al Karama: central
+  Dubai Creek Harbour: central
+  Dubai Healthcare City: central
+  Al Nahda: central
+  Al Qusais: central
+  Jumeirah Village Circle (JVC): central
+  Jumeirah Village Triangle (JVT): central
+  Discovery Gardens: central
+  Al Furjan: central
+  Dubai Production City: central
+  Arjan: central
+  Dubai Sports City: central
+  Motor City: central
+  Dubai Hills Estate: central
+  Meydan / Sobha Hartland: central
+  # inland
+  Dubai Silicon Oasis: inland
+  International City: inland
+  Damac Hills: inland
+  Town Square: inland
+  Dubai South: inland

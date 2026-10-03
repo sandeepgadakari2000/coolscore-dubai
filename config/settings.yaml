@@ -1,0 +1,46 @@
+# Run-time and pipeline settings (design choices, not real-world facts).
+# Real-world numbers belong in assumptions.yaml.
+
+project:
+  name: CoolScore Dubai
+  version: 0.0.1
+
+random_seed: 42
+
+paths:
+  raw: data/raw
+  simulated: data/simulated
+  real_bills: data/real_bills
+  demo: data/demo
+
+weather:
+  source: open-meteo-archive
+  endpoint: https://archive-api.open-meteo.com/v1/archive
+  years: [2023, 2024, 2025]
+  timezone: Asia/Dubai
+  # Model choice (era5 / era5_land / ecmwf_ifs) decided in Phase 1.
+  model: null
+
+simulation:
+  n_scenarios: 40000
+  holdout_fraction: 0.2
+  batch_size: 5000
+
+model:
+  quantiles: [0.1, 0.5, 0.9]
+  fidelity_r2_target: 0.95
+  max_artifact_mb: 50
+
+llm:
+  provider: anthropic
+  # Re-check current model names against Anthropic's docs in Phase 7.
+  model: claude-haiku-4-5-20251001
+  max_tokens: 1024
+  # Without ANTHROPIC_API_KEY the app falls back to the manual form + templates.
+
+app:
+  currency: AED
+  area_unit: sqft
+  default_setpoint_c: 24
+  disclaimer: "Estimates for guidance only — not a quote from DEWA or any cooling provider."
+  simulated_label: "Simulated estimate — based on building physics, not on this unit's bills."
