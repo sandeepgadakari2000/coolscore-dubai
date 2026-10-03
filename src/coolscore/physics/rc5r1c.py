@@ -40,6 +40,7 @@ class PhysicsResult:
     lat_kwh: np.ndarray           # (N, 12) latent cooling per calendar month
     load_x_dt_kwhk: np.ndarray    # (N, 12) sum of total load x (T_out - T_ref)+  [kWh K]
     cooling_hours: np.ndarray     # (N, 12) hours with the coil running
+    appliance_kwh: np.ndarray     # (N, 12) appliance + lighting electricity (for DEWA slab position)
     peak_kw: np.ndarray           # (N,) highest hourly total load
     design_kw: np.ndarray         # (N,) 98th percentile of daily peak loads
     hourly: dict[str, np.ndarray] | None = None
@@ -184,6 +185,7 @@ def simulate(p: UnitParams, weather: pd.DataFrame, facades: pd.DataFrame,
     d_air = (net.h_is * d_s + 1.0) / (net.h_is + net.h_ve)
 
     sens = np.zeros((n, 12)); lat = np.zeros((n, 12)); ldt = np.zeros((n, 12)); hrs = np.zeros((n, 12))
+    appl = np.zeros((n, 12))
     daily_peak = np.zeros((n, n_days))
     hourly = {k: np.zeros((n, n_hours)) for k in ("theta_air", "phi_hc", "q_lat", "phi_int", "phi_sol")} \
         if keep_hourly else None
@@ -236,6 +238,7 @@ def simulate(p: UnitParams, weather: pd.DataFrame, facades: pd.DataFrame,
         lat[:, m] += q_lat / 1000.0
         ldt[:, m] += total_kw * max(te - t_ref, 0.0)
         hrs[:, m] += need
+        appl[:, m] += p.appliance_wm2 * net.a_f * appliance[:, t] / 1000.0
         np.maximum(daily_peak[:, day[t]], total_kw, out=daily_peak[:, day[t]])
         if hourly is not None:
             hourly["theta_air"][:, t] = theta_air0 + d_air * phi_hc
@@ -245,6 +248,6 @@ def simulate(p: UnitParams, weather: pd.DataFrame, facades: pd.DataFrame,
             hourly["phi_sol"][:, t] = phi_sol
 
     return PhysicsResult(
-        sens_kwh=sens, lat_kwh=lat, load_x_dt_kwhk=ldt, cooling_hours=hrs,
+        sens_kwh=sens, lat_kwh=lat, load_x_dt_kwhk=ldt, cooling_hours=hrs, appliance_kwh=appl,
         peak_kw=daily_peak.max(axis=1), design_kw=np.percentile(daily_peak, 98, axis=1), hourly=hourly,
     )

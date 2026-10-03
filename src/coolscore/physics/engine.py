@@ -24,7 +24,7 @@ def run_site_year(params: UnitParams, site: str, year: int, batch_size: int = 50
         return parts[0]
     return rc5r1c.PhysicsResult(**{
         name: np.concatenate([getattr(r, name) for r in parts])
-        for name in ("sens_kwh", "lat_kwh", "load_x_dt_kwhk", "cooling_hours", "peak_kw", "design_kw")
+        for name in ("sens_kwh", "lat_kwh", "load_x_dt_kwhk", "cooling_hours", "appliance_kwh", "peak_kw", "design_kw")
     })
 
 

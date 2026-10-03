@@ -5,13 +5,31 @@
 | 0 | Plan + user-research kit + skeleton | ✅ Done 2026-10-03 (plan approved; D1–D8 as recommended) |
 | 1 | Weather + sun | ✅ Done 2026-10-03 |
 | 2 | Physics engine (5R1C) | ✅ Done 2026-10-03 |
-| 3 | Billing engine | ⏳ Waiting for "go" |
-| 4 | Simulation + surrogate + CoolScore bands | — |
+| 3 | Billing engine | ✅ Done 2026-10-03 |
+| 4 | Simulation + surrogate + CoolScore bands | 🔄 In progress |
 | 5 | App core (Check, Compare, Investor, Methodology) | — |
 | 6 | Developer View, Listing Badge, API | — |
 | 7 | AI layer (parser, explanations, fallback) | — |
 | 8 | Business layer + real-bill validation | — |
 | 9 | Ship | — |
+
+## Phase 3 (2026-10-03): billing engine
+
+**Done**
+- Tariffs from primary sources read on 2026-10-03: DEWA slab page (0.230/0.280/0.320/0.380 AED/kWh, fuel
+  surcharge 0.060 AED/kWh for Oct 2026, 5% VAT), Empower charges page (0.568 AED/RTh, 750 AED/RT/yr billed by
+  days, meter AED 50/quarter or 30/month), RSB RD10 v1.3 (consumption cap 0.643 incl. fuel surcharge, fuel
+  surcharge cap 0.075, single-building plants cap 0.80 with no capacity charges, deposit ≤ 8 months of capacity),
+  Al Sa'fat split-AC minimum EER 9.5 (35 °C) / 6.6 (46 °C).
+- `billing.engine`: district cooling, single-building plant, DEWA split/central AC (COP falls in heat),
+  payer = tenant / chiller-free / service charge; DEWA priced at the marginal slab; VAT once per payer.
+- Biggest uncertainty, flagged: contracted capacity per unit (sq ft per RT, MODELLING ASSUMPTION from
+  secondary sources). For a typical 1-bed, capacity (~AED 3,000/yr) outweighs consumption (~AED 2,100/yr),
+  which matches risk #2.
+- Typical 1-bed (800 sq ft, 2005–14, west, mid floor): district cooling ≈ AED 6,700/yr to the tenant;
+  chiller-free tenant ≈ AED 850/yr (fans); DEWA split AC ≈ AED 1,700/yr.
+
+**Tests:** 115 passing (21 new for Phase 3).
 
 ## Phase 2 (2026-10-03): physics engine
 

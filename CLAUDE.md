@@ -5,8 +5,8 @@ using building physics + Dubai tariffs + an ML surrogate. Full brief: `CoolScore
 Plan: `docs/phase0_plan.md`. Status: `PROGRESS.md` (read it first every session).
 
 ## Process
-- Build in phases (brief §11). After every phase: run all tests, update `PROGRESS.md`, commit,
-  summarise in ≤ 10 lines, then **stop and wait for Sandeep's "go"**.
+- Build in phases (brief §11). After every phase: run all tests, update `PROGRESS.md`, commit.
+  2026-10-03 Sandeep: finish Phases 3-9 without stopping between phases (one summary at the end).
 - Commit as Sandeep (repo-local git config), no Claude co-author line (decision D5).
 - YAML 1.1 traps: quote keys like `"2005_2014"` (int) and `"off"`/`"on"`/`"no"` (bool).
 - Dependencies allowed without asking: numpy, pandas, scikit-learn, pvlib, requests, pyyaml,

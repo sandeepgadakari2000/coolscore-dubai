@@ -47,10 +47,17 @@ def test_record_field_types() -> None:
 
 
 def test_filled_values_cite_a_url_and_a_check_date() -> None:
+    """A filled value needs a source URL and a check date, unless it is clearly marked as a
+    placeholder or a business proposal (brief: 'use a clearly marked placeholder')."""
     for path, rec in _all_records():
-        if rec["value"] is not None:
-            assert str(rec["source"]).startswith("http"), f"{path} has a value but no URL"
-            assert rec["date_checked"] is not None, f"{path} has a value but no date_checked"
+        if rec["value"] is None:
+            continue
+        if rec["source"] is None:
+            assert str(rec["notes"]).startswith(("PLACEHOLDER:", "PROPOSAL:")), f"{path} unsourced, unmarked"
+            assert rec["verify"] is True, path
+            continue
+        assert str(rec["source"]).startswith("http"), f"{path} has a value but no URL"
+        assert rec["date_checked"] is not None, f"{path} has a value but no date_checked"
 
 
 def test_settings_have_core_keys() -> None:

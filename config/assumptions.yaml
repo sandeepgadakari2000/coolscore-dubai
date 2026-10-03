@@ -47,106 +47,138 @@ constants:
 
 billing:
   vat_rate:
-    value: null
-    unit: fraction
-    source: null
-    date_checked: null
+    value: 0.05
+    unit: fraction of the bill (applied once, to the bill total)
+    source: https://www.dewa.gov.ae/en/consumer/billing/slab-tariff
+    date_checked: 2026-10-03
     verify: true
-    notes: UAE VAT on utility bills; confirm rate and that it applies to district cooling and DEWA electricity. Applied exactly once to the bill total.
+    notes: "DEWA slab-tariff page: '5% VAT is applicable on these tariffs'. Empower charges page: 'Each Charge/Service ... is subjected for VAT of 5%'."
     phase: 3
 
   dewa:
     residential_electricity_slabs:
-      value: null
-      unit: list of {upto_kwh_per_month, aed_per_kwh}
-      source: null
-      date_checked: null
+      value: [{upto_kwh: 2000, aed_per_kwh: 0.230}, {upto_kwh: 4000, aed_per_kwh: 0.280}, {upto_kwh: 6000, aed_per_kwh: 0.320}, {upto_kwh: null, aed_per_kwh: 0.380}]
+      unit: AED per kWh by monthly consumption slab (residential/commercial)
+      source: https://www.dewa.gov.ae/en/consumer/billing/slab-tariff
+      date_checked: 2026-10-03
       verify: true
-      notes: Candidate primary source https://www.dewa.gov.ae/en/consumer/billing/slab-tariff (not yet opened). Check expat vs national tariffs.
+      notes: "Read on DEWA's page (last updated 16 May 2026): 0-2000 kWh 0.230, 2001-4000 0.280, 4001-6000 0.320, 6001+ 0.380 AED/kWh."
       phase: 3
     fuel_surcharge:
-      value: null
+      value: 0.060
       unit: AED per kWh
-      source: null
-      date_checked: null
+      source: https://www.dewa.gov.ae/en/consumer/billing/slab-tariff
+      date_checked: 2026-10-03
       verify: true
-      notes: Fuel surcharge added per kWh on DEWA electricity bills; confirm current value.
+      notes: "'Fuel Surcharge - October 2026: Electricity D 0.060/kWh'. Varies with fuel prices; re-check monthly."
       phase: 3
-    baseline_household_kwh:
-      value: null
-      unit: kWh per month by bedrooms (non-cooling use)
+    meter_service_charge:
+      value: {type_1: 5, type_2: 6, type_3: 35}
+      unit: AED per month (fixed; not part of the marginal cooling cost)
+      source: https://www.dewa.gov.ae/en/consumer/billing/slab-tariff
+      date_checked: 2026-10-03
+      verify: true
+      notes: Shown only in the estimated DEWA share of the true monthly cost.
+      phase: 3
+    housing_fee_rate:
+      value: 0.05
+      unit: fraction of annual rent, billed monthly through DEWA
+      source: https://www.engelvoelkers.com/ae/en/resources/housing-fee-dubai
+      date_checked: 2026-10-03
+      verify: true
+      notes: "Dubai Municipality housing fee, 5% of annual rent collected monthly on the DEWA bill (several guides agree; search snippets, no government page opened). Used only in the 'true monthly cost'."
+      phase: 3
+    other_household_kwh:
+      value: {low: 100, central: 200, high: 300}
+      unit: kWh per month (water heating, cooking etc., on top of the physics appliance/lighting energy)
       source: null
       date_checked: null
       verify: true
-      notes: Baseline consumption on which marginal cooling kWh is stacked to pick the right slab. May need to be a labelled assumption if no statistic exists.
+      notes: "PLACEHOLDER: no published Dubai breakdown found. Only positions the cooling kWh within DEWA's slabs (marginal pricing); it is never billed as cooling."
       phase: 3
 
   district_cooling:
     consumption_charge:
-      value: null
-      unit: AED per RTh
-      source: null
-      date_checked: null
+      value: 0.568
+      unit: AED per RTh (ton-hour)
+      source: https://www.empower.ae/customer-care/charges-explanation/
+      date_checked: 2026-10-03
       verify: true
-      notes: "Third-party blogs (rentincreaseuae.com, MyBayut) quote 0.568 AED/RTh with no citation; NOT used. Primary source to open: https://www.empower.ae/customer-care/charges-explanation/ (redirected on 2026-10-03)."
+      notes: "Empower charges page: 'at a rate of AED 0.568 fils per RT per hour' (reads as AED 0.568/RTh). Other providers may differ; the app lets users override with their own bill's rates."
       phase: 3
     capacity_charge:
-      value: null
-      unit: AED per RT per year
-      source: null
-      date_checked: null
+      value: 750
+      unit: AED per RT per year, billed monthly by days in month
+      source: https://www.empower.ae/customer-care/charges-explanation/
+      date_checked: 2026-10-03
       verify: true
-      notes: "Charged even at zero consumption. Blogs quote 750 AED/RT/yr uncited; NOT used. Confirm with provider and the Dubai regulator."
+      notes: "Empower: 'AED 750 per Refrigeration Ton (RT) per annum, billed monthly in advance, based on the number of days in the month'; example 6 RT x 750 = 4,500/yr; the page prints January as '4500/365*31 = 387.50', but that formula gives 382.19 (387.50 matches a 360-day year). We follow the stated formula. Payable even with zero use."
       phase: 3
     fuel_surcharge:
-      value: null
-      unit: to be determined (AED per RTh or percent)
-      source: null
-      date_checked: null
+      value: 0.075
+      unit: AED per RTh
+      source: https://rsbdubai.gov.ae/media/baufmpnp/rd10-tariffs-v14.pdf
+      date_checked: 2026-10-03
       verify: true
-      notes: Whether and how a fuel surcharge applies to district cooling is unconfirmed (one blog claims a fixed percentage).
+      notes: "RSB RD10 v1.3 (17-09-2025): fuel surcharge cap AED 0.075/TRh; consumption tariff cap 0.643/TRh 'inclusive of Fuel Surcharge' = 0.568 + 0.075. Empower passes DEWA's fuel surcharge through 'as notified'. Using the cap is an upper-bound reading."
       phase: 3
     meter_admin_fee:
-      value: null
+      value: {low: 16.67, central: 16.67, high: 30}
       unit: AED per month
-      source: null
-      date_checked: null
+      source: https://www.empower.ae/customer-care/charges-explanation/
+      date_checked: 2026-10-03
       verify: true
-      notes: Meter maintenance / billing fees.
+      notes: "Empower meter maintenance AED 50 per 3 months or AED 30 per month depending on location; RSB RD10 caps third-party billing-services fees at AED 30/month."
       phase: 3
-    contracted_capacity_method:
-      value: null
-      unit: sq ft per RT, or multiple of simulated design peak load
-      source: null
-      date_checked: null
+    single_building_consumption_cap:
+      value: 0.80
+      unit: AED per RTh (no capacity charge allowed)
+      source: https://rsbdubai.gov.ae/media/baufmpnp/rd10-tariffs-v14.pdf
+      date_checked: 2026-10-03
       verify: true
-      notes: How contracted RT per unit is set. Best evidence will be contracted_capacity_rt on real bills.
+      notes: "RD10: 'Consumption Tariff for Single Building District Cooling Systems' cap 0.80 AED/TRh plus fuel surcharge cap 0.075; 'No Capacity Charges are allowed to be charged to Units serviced by Single Building District Cooling Systems'. Used for the building_central_plant system at the cap (upper bound)."
+      phase: 3
+    deposit_cap_months:
+      value: 8
+      unit: months of capacity charges (refundable deposit, maximum)
+      source: https://rsbdubai.gov.ae/media/baufmpnp/rd10-tariffs-v14.pdf
+      date_checked: 2026-10-03
+      verify: true
+      notes: "RD10: deposits 'Must not exceed 8 months of Capacity Charges unless otherwise approved'. Shown as a move-in cost note."
+      phase: 3
+    contracted_capacity_sqft_per_rt:
+      value: {low: 150, central: 200, high: 300}
+      unit: sq ft of unit area per contracted RT
+      source: https://utilitybilluae.com/district-cooling-cost-uae/
+      date_checked: 2026-10-03
+      verify: true
+      notes: "MODELLING ASSUMPTION, the most important one in billing. Secondary guides (search snippets) quote typical contracted loads of 2-4 RT for studios, 3-5 RT for 1-bed and 5-7 RT for 2-bed units; Empower's own example uses 6 RT. RSB RD10 (2025) now requires allocation as a fair share of the building's contracted capacity, not installed equipment. Contracted RT = max(size / this, simulated design peak). Real bills (contracted_capacity_rt) will calibrate it."
       phase: 3
 
   equipment:
-    split_ac_rated_cop:
-      value: null
-      unit: W thermal per W electric at rating conditions
-      source: null
-      date_checked: null
+    split_ac_min_eer:
+      value: {t1_35c: 9.5, t3_46c: 6.6}
+      unit: EER (Btu/h per W) at T1 (35 C) and T3 (46 C) rating conditions
+      source: https://www.wkcgroup.com/wp-content/uploads/2023/04/Al-Safat-Dubai-Green-Building-Evaluation-System.pdf
+      date_checked: 2026-10-03
       verify: true
-      notes: UAE minimum efficiency / star-rating standard (ESMA / MoIAT) and typical installed range.
+      notes: "Al Sa'fat Reference Table 502.01(2): air-cooled split systems < 65,000 Btu/h minimum 9.5 EER (T1, ARI 210/240) and 6.6 EER (T3, ISO 5151). COP = EER / 3.412. The T1->T3 drop gives the high-temperature derate used by the billing engine."
       phase: 3
-    cop_derate_per_k_above_rating:
-      value: null
-      unit: fraction per K
-      source: null
-      date_checked: null
+    installed_efficiency_factor:
+      value: {low: 0.7, central: 0.85, high: 1.0}
+      unit: multiplier on the minimum-standard COP (age, maintenance, part load)
+      source: https://www.wkcgroup.com/wp-content/uploads/2023/04/Al-Safat-Dubai-Green-Building-Evaluation-System.pdf
+      date_checked: 2026-10-03
       verify: true
-      notes: Efficiency drop at high outdoor temperature.
+      notes: "MODELLING ASSUMPTION anchored on the Al Sa'fat minimum: installed, ageing units in older buildings may perform below the rated minimum."
       phase: 3
     fcu_fan_power:
-      value: null
-      unit: W electric per kW thermal of cooling delivered
-      source: null
-      date_checked: null
+      value: {low: 18, central: 25, high: 40}
+      unit: W of fan power per kW of installed cooling capacity, while the coil runs
+      source: https://feta.co.uk/client/files/HEVAC/1734700807-HEVAC_POS_SFP_for_fan_coil_units_Iss2.pdf
+      date_checked: 2026-10-03
       verify: true
-      notes: In-unit fan coil fans, billed by DEWA even when chiller-free.
+      notes: "MODELLING ASSUMPTION: UK guidance limits fan-coil specific fan power to 0.3-0.5 W/(l/s) (FETA/HEVAC statement, Approved Document L, search snippets); times ~60-80 l/s of air per kW of cooling gives ~18-40 W/kW. Not UAE-specific. Fan electricity is billed by DEWA even when chiller-free."
       phase: 3
 
 physics:
