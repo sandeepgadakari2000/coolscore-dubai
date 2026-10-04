@@ -105,6 +105,23 @@ with right:
 ui.livebar(est, month)
 
 if est is not None:
+    # ---- heat X-ray: the result as a picture (physics heat budget, priced with the estimate) ----
+    st.write("")
+    ui.heading(f"Heat X-ray · {ui.MONTH_NAMES[month]}",
+               "where this flat's heat comes from and what each part costs — the AC has to remove all of it")
+    ui.heat_xray(ui.heat_args(est, month), key="chk_xray")
+    with st.expander("How is the heat X-ray calculated?"):
+        st.write("The hourly physics engine simulates this flat for the month on 2024 weather, then again with each "
+                 "heat source switched off: sun through the glass, sun on walls and roof, people and appliances, "
+                 "outside air and humidity. Each source's share is how much the AC's load falls without it (the "
+                 "average of two switch-off orders, so the parts add up exactly). What is left with all four off is "
+                 "heat conducted through walls and glass from the hot outdoor air.")
+        st.write("AED: this month's typical bill minus the fixed capacity charge, split by each source's share of "
+                 "the heat. The capacity charge is shown separately because it doesn't depend on heat. 'People' "
+                 "compares the peak heat flow on a hot afternoon (98th-percentile daily peak) with one person's "
+                 "body heat (72 W + 45 W, ASHRAE). Central building values, so this is a typical unit like yours, "
+                 "not a measurement.")
+    st.write("")
     if est.assumed:
         nice = ", ".join(a.replace("_", " ") for a in est.assumed)
         st.markdown(f"<div class='cs-flag'>Assumed because not given: <b>{nice}</b>. Change them above if you know "

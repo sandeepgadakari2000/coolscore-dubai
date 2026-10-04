@@ -13,6 +13,23 @@
 | 8 | Business layer + real-bill validation | ✅ Done 2026-10-03 |
 | 9 | Ship | ✅ Done 2026-10-03 |
 
+## Heat X-ray (2026-10-04): the result as a picture
+
+**Done**
+- `coolscore.physics.breakdown`: a heat budget for one unit and month. It re-runs the hourly engine with each source
+  switched off (sun through glass, sun on walls and roof, people and appliances, outside air and humidity; the rest is
+  conduction). Shares are the average of forward and reverse switch-off orders, so the parts add up exactly. All
+  8 variants run as one batch over one month: about 0.25 s, cached per unit and month.
+- Heat X-ray component (`app/components/heat_xray/`): a thermal-camera cutaway with particle streams and glows sized
+  by kWh per source. Sun, beam and floor patch; facade conduction; humid air at the gaps; people and appliance glow;
+  the AC's cold stream. The heat budget shows % and AED per source, with the fixed capacity charge hatched separately.
+  Plain comparisons: peak heat flow as people standing in the flat (117 W each, ASHRAE) and the humidity share.
+- Finding it shows (typical west-facing 1-bed, August): outside air and humidity ≈ 50% of the heat, walls and glass
+  24%, people 16%, sun through the glass 10%; 37% of the AC's work is drying air. In January the fixed capacity charge
+  is most of the bill.
+- **Tests:** 171 passing (the parts add up and respond to glass, roof and season; the AED split reconciles with the
+  month's bill; chiller-free shows kWh only).
+
 ## Redesign (2026-10-04): Dubai liquid-glass UI + live climate scene
 
 **Done**

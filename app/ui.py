@@ -45,6 +45,8 @@ FACING_OPTIONS = SIMPLE_FACINGS + [f"{a}+{b}" for a, b in
                                    [("N", "E"), ("E", "S"), ("S", "W"), ("W", "N"),
                                     ("NE", "SE"), ("SE", "SW"), ("SW", "NW"), ("NW", "NE")]]
 MONTHS = climate.MONTHS
+MONTH_NAMES = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October",
+               "November", "December"]
 PAYER_SHORT = {"tenant": "you pay", "landlord_chiller_free": "you pay · fans", "service_charge": "you pay · fans"}
 DISCLAIMER = config.settings()["app"]["disclaimer"]
 SIMULATED = config.settings()["app"]["simulated_label"]
@@ -278,6 +280,7 @@ hr { border-color: rgba(255,255,255,.1) !important; }
 """.replace("__SKYLINE__", _SKYLINE).replace("__PATTERN__", _PATTERN)
 
 _STAGE = components.declare_component("climate_stage", path=str(ROOT / "app" / "components" / "climate_stage"))
+_XRAY = components.declare_component("heat_xray", path=str(ROOT / "app" / "components" / "heat_xray"))
 
 
 def setup(title: str) -> None:
@@ -440,6 +443,52 @@ def stage_args(est, listing: dict, month: int, mode: str = "live", message: str 
 def climate_stage(args: dict, key: str) -> None:
     """Render the animated scene. A stable key keeps the iframe alive across reruns, so changes glide."""
     _STAGE(**args, key=key, default=None)
+
+
+@st.cache_data(show_spinner=False, max_entries=256)
+def _heat_budget(spec_items: tuple, month: int) -> dict:
+    """Physics heat budget for one unit and month (cached: ~0.25 s when it has to run)."""
+    from coolscore.physics.breakdown import ListingSpec, heat_budget
+
+    return heat_budget(ListingSpec(**dict(spec_items)), month)
+
+
+def heat_args(est, month: int) -> dict:
+    """The heat X-ray: physics heat budget by source for the month, priced with the model's monthly estimate.
+
+    Tenant pays: the month's typical bill minus the fixed capacity charge is split by each source's share of
+    the heat; the capacity charge is shown on its own (it doesn't depend on heat at all). Chiller-free or
+    service charge: the heat is the landlord's cost, so sources show kWh only.
+    """
+    from dataclasses import asdict
+
+    from coolscore.physics.breakdown import LABELS, SOURCES, spec_from_listing
+
+    full = est.listing
+    spec = spec_from_listing(full)
+    b = _heat_budget(tuple(sorted(asdict(spec).items())), month)
+    total = b["total_kwh"]
+    month_p50 = month_ranges(est)[month][1]
+    tenant = full["payer"] == "tenant"
+    fixed = est.capacity_aed_per_year / 12 if tenant and full["system"] == "district_cooling" else 0.0
+    variable = max(month_p50 - fixed, 0.0)
+    sources = [{"key": k, "label": LABELS[k], "kwh": b["kwh"][k],
+                "aed": round(variable * b["kwh"][k] / total) if tenant and total > 0 else None} for k in SOURCES]
+    m = climate.site_months(full["community"])[month]
+    note = None if tenant else f"Your landlord pays to remove this heat (≈ {aed(est.landlord_annual_p50)} a year)"
+    return {"month_name": MONTH_NAMES[month], "sources": sources, "total_kwh": total,
+            "latent_share": b["latent_share"], "design_kw": b["design_kw"],
+            "people_equivalent": b["people_equivalent"], "month_aed": round(month_p50) if tenant else None,
+            "fixed_aed": round(fixed), "payer_note": note, "setpoint": int(round(float(full.get("setpoint_c", 24)))),
+            "outside_c": m["tmax"], "outside_rh": m["rh"],
+            "unit": {"glass": full["glass"], "balcony": full["balcony"], "corner": "+" in str(full["facing"]),
+                     "top_floor": int(full["floor"]) == int(full["total_floors"]),
+                     "people": int(full.get("household_size") or int(full["bedrooms"]) + 1)}}
+
+
+def heat_xray(args: dict, key: str) -> None:
+    """Render the thermal cutaway; a stable key keeps it alive so streams and bars tween between states."""
+    _XRAY(**args, key=key, default=None)
 
 
 def livebar(est, month: int) -> None:

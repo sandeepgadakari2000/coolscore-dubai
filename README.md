@@ -142,9 +142,21 @@ the chosen month (`data/demo/climate_monthly.json`, from the 2023–25 hourly da
 Because the component persists across reruns, changes glide instead of reloading. It respects
 `prefers-reduced-motion`.
 
+**The Heat X-ray** (`app/components/heat_xray/`, fed by `coolscore.physics.breakdown`) turns the result into a picture
+a client can read without numbers: a thermal-camera cutaway of the flat for the chosen month.
+- The physics engine re-runs the unit with each heat source switched off: sun through the glass, sun on walls and
+  roof, people and appliances, outside air and humidity, and conduction from the hot air outside.
+- Each source then appears as a particle stream and a glow, sized by its simulated kWh of heat. The AC pushes it
+  all back out as cold air.
+- Beside it, each source's share of the month's bill is shown in AED, with the fixed capacity charge kept apart.
+- Underneath are plain comparisons, for example: "On a hot afternoon heat flows in at 2.9 kW — about the heat of
+  25 people standing in your flat", and "37% of the AC's work is drying humid air".
+
+![Heat X-ray: a thermal cutaway of the flat in August — outside air and humidity 50%, heat through walls and glass 24%, people 16%, sun through the glass 10% — with AED per source and the fixed capacity charge](docs/screenshots/heat_xray.png)
+
 | Page | What it answers |
 |---|---|
-| **Check a Unit** | Paste a listing or fill a form; everything updates live (no submit). CoolScore, the selected month's and the annual range, true monthly cost, the live climate scene, drivers in AED, a heat-coloured monthly chart, what-if (floor, facing, AC temperature, chiller-free), plain-language explanation and questions to ask the agent |
+| **Check a Unit** | Paste a listing or fill a form; everything updates live (no submit). CoolScore, the selected month's and the annual range, true monthly cost, the live climate scene, the Heat X-ray (where the heat comes from, in AED), drivers in AED, a heat-coloured monthly chart, what-if (floor, facing, AC temperature, chiller-free), plain-language explanation and questions to ask the agent |
 | **Compare Units** | 2–4 units side by side; flags when the cheaper rent is the more expensive home |
 | **Investor View** | Net yield after cooling and service charges; the rent premium a chiller-free offer must earn |
 | **Developer View** | Facade heatmap of a fictional tower (floors × directions) and AED impact of glass ratio, glazing and balcony depth, per unit and for the whole tower (runs the physics engine directly) |
@@ -242,7 +254,7 @@ On Windows use `.venv\Scripts\python.exe` instead of `.venv/bin/python`. Then:
 | `python tasks.py launch` | Start the app and open it in the browser (what the `.cmd` runs) | ~3 s |
 | `python tasks.py app` | Streamlit app at http://localhost:8501 (uses the committed model) | instant |
 | `python tasks.py api` | FastAPI at http://127.0.0.1:8000/docs | instant |
-| `python tasks.py test` | 169 pytest tests | ~2 min |
+| `python tasks.py test` | 171 pytest tests | ~2 min |
 | `python tasks.py data` | Re-fetch and correct weather, facade sun (network) | ~30 s |
 | `python tasks.py simulate` | 40,000 scenarios through physics + billing | ~4 min |
 | `python tasks.py train` | Surrogate, quantiles, conformal calibration, A–E bands | ~2 min |
@@ -267,7 +279,7 @@ use, which suits a portfolio demo; a commercial launch needs its paid plan.
 config/      assumptions.yaml (every real-world number + source) · archetypes · communities · settings
 data/        raw/ weather cache · demo/ model artifact · real_bills/ template · simulated/ (regenerable)
 src/coolscore/  weather · physics · billing · simulate · model · validation · assistant
-app/         Streamlit Home.py + 7 pages      api/   FastAPI      tests/   169 tests
+app/         Streamlit Home.py + 7 pages      api/   FastAPI      tests/   171 tests
 docs/        prd · competitive_landscape · user-research/ · business_model · gtm_and_pilot · pitch_deck
              interview_prep · model_card · methodology · assumptions · evidence/ · validation_report
 ```

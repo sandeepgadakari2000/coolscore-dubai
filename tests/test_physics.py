@@ -216,3 +216,21 @@ def test_psychrometrics() -> None:
     assert psychro.humidity_ratio_from_dewpoint(20.0, 101325.0) == pytest.approx(0.0147, abs=3e-4)
     w_in = psychro.humidity_ratio_from_rh(24.0, 0.5, 101325.0)
     assert w_in == pytest.approx(0.0093, abs=3e-4)
+
+
+def test_heat_budget_parts_add_up_and_follow_the_building() -> None:
+    """The heat X-ray's sources sum to the load, and respond to glass, roof exposure and season."""
+    from dataclasses import replace
+
+    from coolscore.physics.breakdown import SOURCES, heat_budget
+
+    base = ListingSpec(community="Business Bay", era_band="2005_2014", size_sqft=800, bedrooms=1, floor=15,
+                       total_floors=30, facing="W", glass="medium")
+    aug, jan = heat_budget(base, 7), heat_budget(base, 0)
+    for b in (aug, jan):
+        assert set(b["kwh"]) == set(SOURCES)
+        assert abs(sum(b["kwh"].values()) - b["total_kwh"]) <= 0.5      # rounded parts add up
+        assert 0 < b["latent_share"] < 1
+    assert aug["total_kwh"] > 2 * jan["total_kwh"] and aug["people_equivalent"] > jan["people_equivalent"]
+    assert heat_budget(replace(base, glass="floor_to_ceiling"), 7)["kwh"]["sun_glass"] > aug["kwh"]["sun_glass"]
+    assert heat_budget(replace(base, floor=30), 7)["kwh"]["sun_walls"] > aug["kwh"]["sun_walls"]   # roof sun

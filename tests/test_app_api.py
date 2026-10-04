@@ -214,3 +214,18 @@ def test_direction_helper_uses_geometry_and_declines_when_unsure() -> None:
     assert direction.suggest("Dubai Creek Harbour", "Burj Khalifa view").facing == "W"
     assert direction.suggest("Downtown Dubai", "Burj Khalifa view") is None
     assert direction.suggest("Jumeirah Village Circle (JVC)", "golf view") is None
+
+
+def test_heat_xray_prices_the_heat_and_keeps_the_fixed_charge_apart() -> None:
+    sys.path.insert(0, str(ROOT / "app"))
+    import ui
+
+    unit = {k: v for k, v in UNIT.items() if k != "annual_rent_aed"}
+    a = ui.heat_args(predict.estimate(unit), 7)
+    est = predict.estimate(unit)
+    assert a["fixed_aed"] == round(est.capacity_aed_per_year / 12) > 0
+    assert sum(s["aed"] for s in a["sources"]) == pytest.approx(a["month_aed"] - a["fixed_aed"], abs=3)
+    assert a["people_equivalent"] > 5 and a["outside_c"] > 40
+    free = ui.heat_args(predict.estimate({**unit, "payer": "landlord_chiller_free"}), 7)
+    assert free["month_aed"] is None and all(s["aed"] is None for s in free["sources"])
+    assert "landlord" in free["payer_note"]
