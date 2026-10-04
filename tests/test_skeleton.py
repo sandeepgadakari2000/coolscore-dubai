@@ -51,3 +51,10 @@ def test_findings_contain_no_fabricated_quotes() -> None:
     quotes = re.findall(r'"([^"\n]{12,})"', text)
     real = [q for q in quotes if q != QUOTE_PLACEHOLDER]
     assert real == [], f"Non-placeholder quotes found: {real}"
+
+
+def test_windows_launcher_is_valid() -> None:
+    """'Start CoolScore.cmd' must keep CRLF endings (cmd mis-reads goto labels otherwise) and run tasks.py launch."""
+    raw = (ROOT / "Start CoolScore.cmd").read_bytes()
+    assert raw.count(b"\n") == raw.count(b"\r\n") > 0
+    assert b"tasks.py launch" in raw

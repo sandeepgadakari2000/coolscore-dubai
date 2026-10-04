@@ -69,6 +69,6 @@ C:\Users\sande\.venvs\coolscore\Scripts\python.exe tasks.py test      # pytest -
 ... tasks.py report-weather   # docs/evidence/weather.md + weather.html
 ... tasks.py report-physics   # docs/evidence/physics.md (orientation, archetypes, stock spread)
 ... tasks.py simulate (~4 min) | train (~2 min) | validate | assumptions (docs/assumptions.md)
-... tasks.py app (Streamlit, :8501) | api (FastAPI, :8000, docs at /docs)
+... tasks.py launch (app + opens browser; "Start CoolScore.cmd" runs it) | app (Streamlit, :8501) | api (:8000/docs)
 ```
 Pipeline budget: full `data → simulate → train` ≤ 15 min on a laptop; app answers < 3 s.

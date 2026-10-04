@@ -200,7 +200,12 @@ adds `cheaper_rent_is_more_expensive_home`.
 
 ## How to run
 
-Python 3.11+ (built and tested on 3.13). `tasks.py` works on Windows, macOS and Linux; the `Makefile` wraps it.
+**Windows, one click:** double-click **`Start CoolScore.cmd`**. The first run sets up Python (a few minutes, once).
+After that the app starts in about 3 seconds and opens in your browser. Keep the black window open while you use
+it, and close it to stop. Double-clicking again while the app is running just reopens the page.
+
+**Any OS, by hand:** Python 3.11+ (built and tested on 3.13). `tasks.py` works on Windows, macOS and Linux; the
+`Makefile` wraps it.
 
 ```bash
 python -m venv .venv
@@ -214,9 +219,10 @@ On Windows use `.venv\Scripts\python.exe` instead of `.venv/bin/python`. Then:
 
 | Command | What it does | Time |
 |---|---|---|
+| `python tasks.py launch` | Start the app and open it in the browser (what the `.cmd` runs) | ~3 s |
 | `python tasks.py app` | Streamlit app at http://localhost:8501 (uses the committed model) | instant |
 | `python tasks.py api` | FastAPI at http://127.0.0.1:8000/docs | instant |
-| `python tasks.py test` | 165 pytest tests | ~2 min |
+| `python tasks.py test` | 166 pytest tests | ~2 min |
 | `python tasks.py data` | Re-fetch and correct weather, facade sun (network) | ~30 s |
 | `python tasks.py simulate` | 40,000 scenarios through physics + billing | ~4 min |
 | `python tasks.py train` | Surrogate, quantiles, conformal calibration, A–E bands | ~2 min |
@@ -240,7 +246,7 @@ use, which suits a portfolio demo; a commercial launch needs its paid plan.
 config/      assumptions.yaml (every real-world number + source) · archetypes · communities · settings
 data/        raw/ weather cache · demo/ model artifact · real_bills/ template · simulated/ (regenerable)
 src/coolscore/  weather · physics · billing · simulate · model · validation · assistant
-app/         Streamlit Home.py + 7 pages      api/   FastAPI      tests/   165 tests
+app/         Streamlit Home.py + 7 pages      api/   FastAPI      tests/   166 tests
 docs/        prd · competitive_landscape · user-research/ · business_model · gtm_and_pilot · pitch_deck
              interview_prep · model_card · methodology · assumptions · evidence/ · validation_report
 ```
