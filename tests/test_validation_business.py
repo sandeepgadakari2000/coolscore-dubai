@@ -71,6 +71,19 @@ def test_sanity_band_check_uses_published_ranges() -> None:
     assert {r["bedrooms"] for r in rows} == {0, 1, 2, 3}
 
 
+def test_sanity_band_survives_without_the_simulated_dataset(monkeypatch) -> None:
+    """On Streamlit Cloud data/simulated/ is absent; the Methodology page must still show the band check."""
+    from coolscore.simulate import run as sim
+
+    def missing():
+        raise FileNotFoundError("no simulated dataset in a fresh clone")
+
+    monkeypatch.setattr(sim, "load_dataset", missing)
+    rows = report.sanity_band_check()
+    assert {r["bedrooms"] for r in rows} == {0, 1, 2, 3}
+    assert all(r["band_low"] <= r["band_high"] for r in rows)
+
+
 def test_business_case_pnl_and_unit_economics() -> None:
     b = business.BusinessInputs.defaults()
     df = business.pnl(b)

@@ -5,7 +5,9 @@
 > Existing tools are appliance calculators that work after you move in. CoolScore predicts a specific unit's
 > cooling cost before you sign, using building physics and Dubai's cooling tariffs.
 
-**Live demo:** *[link placeholder — Streamlit Community Cloud]* · **Demo video:** *[placeholder]* ·
+**Live demo:** [coolscore-dubai.streamlit.app](https://coolscore-dubai-jvw959b8tqbsrazygcm7kk.streamlit.app/)
+(try the [one-click example](https://coolscore-dubai-jvw959b8tqbsrazygcm7kk.streamlit.app/Check_a_Unit?example=1)) ·
+**Demo video:** *[placeholder]* ·
 **Try it locally in 2 minutes:** [How to run](#how-to-run)
 
 ![Check a Unit: CoolScore C, AED 547–787 a month in summer, true monthly cost and the drivers in AED](docs/screenshots/check_a_unit.png)
@@ -222,7 +224,7 @@ On Windows use `.venv\Scripts\python.exe` instead of `.venv/bin/python`. Then:
 | `python tasks.py launch` | Start the app and open it in the browser (what the `.cmd` runs) | ~3 s |
 | `python tasks.py app` | Streamlit app at http://localhost:8501 (uses the committed model) | instant |
 | `python tasks.py api` | FastAPI at http://127.0.0.1:8000/docs | instant |
-| `python tasks.py test` | 166 pytest tests | ~2 min |
+| `python tasks.py test` | 167 pytest tests | ~2 min |
 | `python tasks.py data` | Re-fetch and correct weather, facade sun (network) | ~30 s |
 | `python tasks.py simulate` | 40,000 scenarios through physics + billing | ~4 min |
 | `python tasks.py train` | Surrogate, quantiles, conformal calibration, A–E bands | ~2 min |
@@ -246,7 +248,7 @@ use, which suits a portfolio demo; a commercial launch needs its paid plan.
 config/      assumptions.yaml (every real-world number + source) · archetypes · communities · settings
 data/        raw/ weather cache · demo/ model artifact · real_bills/ template · simulated/ (regenerable)
 src/coolscore/  weather · physics · billing · simulate · model · validation · assistant
-app/         Streamlit Home.py + 7 pages      api/   FastAPI      tests/   166 tests
+app/         Streamlit Home.py + 7 pages      api/   FastAPI      tests/   167 tests
 docs/        prd · competitive_landscape · user-research/ · business_model · gtm_and_pilot · pitch_deck
              interview_prep · model_card · methodology · assumptions · evidence/ · validation_report
 ```

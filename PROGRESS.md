@@ -40,7 +40,8 @@
 **Left for Sandeep (brief §13)**
 - Interviews and real quotes (`docs/user-research/`), anonymised bills (`data/real_bills/`).
 - Verify the 61 `verify: true` records, starting with `docs/assumptions.md` → "Verify first".
-- Deploy with your own accounts, record the demo, fill the live-demo and video links in the README.
+- ~~Deploy~~ Live since 2026-10-04 on Streamlit Community Cloud (link in the README; GitHub
+  sandeepgadakari2000/coolscore-dubai, pushes to `main` redeploy). Still to do: record the demo, add the video link.
 - Optional: PDF of the deck needs Marp (`npx @marp-team/marp-cli docs/pitch_deck.md --pdf`); not installed.
 
 ## Phase 8 (2026-10-03): business layer + real-bill validation

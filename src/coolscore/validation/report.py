@@ -134,7 +134,10 @@ def sanity_band_check() -> list[dict]:
     try:
         data = sim.load_dataset()
     except FileNotFoundError:
-        return []
+        # The simulated dataset is regenerable and not committed (e.g. on Streamlit Cloud); use the copy
+        # `tasks.py validate` saved with the demo artifacts.
+        cached = config.path("demo") / "validation.json"
+        return json.loads(cached.read_text(encoding="utf-8")).get("sanity_band", []) if cached.exists() else []
     dc = data[(data["system"] == "district_cooling") & (data["payer"] == "tenant")]
     out = []
     for beds, (lo, hi) in band.items():
