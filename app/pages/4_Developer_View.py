@@ -9,9 +9,9 @@ from coolscore.developer import TowerDesign, compare, simulate_tower
 from coolscore.physics.params import ORIENTATIONS
 
 ui.setup("Developer View")
-st.title("Developer view")
-st.caption("**Meridian Heights** — a fictional 1-bedroom tower. Every cell is one simulated unit "
-           "(typical household, reference district-cooling tariff). Runs the physics engine directly.")
+ui.hero("Developer view", "<b>Meridian Heights</b> — a fictional 1-bedroom tower. Every cell is one unit, simulated "
+        "hour by hour (typical household, reference district-cooling tariff). Move the design levers and watch the "
+        "facade re-grade.", eyebrow="Physics engine, live")
 ui.model_ready()
 
 
@@ -30,41 +30,42 @@ with st.sidebar:
                                format_func=ui.OBSTRUCTION_LABELS.get)
 
 base = TowerDesign(community=community, era_band=era, floors=floors, obstruction=obstruction, glass="high")
-st.subheader("Design levers")
-c1, c2, c3 = st.columns(3)
-with c1:
-    wwr = st.slider("Glass share of facade", 0.2, 0.9, 0.6, 0.05, help="Window-to-wall ratio. Base design: 0.60.")
-with c2:
-    shgc = st.slider("Glazing SHGC", 0.15, 0.6, 0.25, 0.01,
-                     help="Solar heat gain coefficient of the glass (lower = more solar control).")
-with c3:
-    depth = st.slider("Balcony / fin depth (m)", 0.0, 3.0, 0.0, 0.25)
+with ui.glass("dev_tower"):
+    ui.heading("Design levers", "applied to every unit in the tower")
+    c1, c2, c3 = st.columns(3)
+    with c1:
+        wwr = st.slider("Glass share of facade", 0.2, 0.9, 0.6, 0.05, help="Window-to-wall ratio. Base design: 0.60.")
+    with c2:
+        shgc = st.slider("Glazing SHGC", 0.15, 0.6, 0.25, 0.01,
+                         help="Solar heat gain coefficient of the glass (lower = more solar control).")
+    with c3:
+        depth = st.slider("Balcony / fin depth (m)", 0.0, 3.0, 0.0, 0.25)
 
-design = TowerDesign(**{**base.__dict__, "wwr": wwr, "shgc": shgc, "balcony_depth_m": depth})
-reference = TowerDesign(**{**base.__dict__, "wwr": 0.6, "shgc": 0.25, "balcony_depth_m": 0.0})
-with st.spinner("Simulating every unit hour by hour…"):
-    ref_df = run(reference)
-    df = run(design)
+    design = TowerDesign(**{**base.__dict__, "wwr": wwr, "shgc": shgc, "balcony_depth_m": depth})
+    reference = TowerDesign(**{**base.__dict__, "wwr": 0.6, "shgc": 0.25, "balcony_depth_m": 0.0})
+    with st.spinner("Simulating every unit hour by hour…"):
+        ref_df = run(reference)
+        df = run(design)
 
-grid = df.pivot(index="floor", columns="facing", values="intensity")[list(ORIENTATIONS)].sort_index(ascending=False)
-letters = df.pivot(index="floor", columns="facing", values="score")[list(ORIENTATIONS)].sort_index(ascending=False)
-aed = df.pivot(index="floor", columns="facing", values="annual_aed")[list(ORIENTATIONS)].sort_index(ascending=False)
-# Colour by grade with the app-wide A (green) → E (red) palette; hover gives the exact intensity.
-LETTERS = "ABCDE"
-grade = letters.apply(lambda col: col.map(LETTERS.index))
-scale = []
-for i, letter in enumerate(LETTERS):
-    scale += [[i / 5, ui.SCORE_COLORS[letter]], [(i + 1) / 5, ui.SCORE_COLORS[letter]]]
-fig = go.Figure(go.Heatmap(
-    z=grade.values, x=list(ORIENTATIONS), y=[str(f) for f in grid.index], text=letters.values,
-    texttemplate="%{text}", customdata=np.dstack([aed.values, grid.values]),
-    colorscale=scale, zmin=-0.5, zmax=4.5,
-    hovertemplate="Floor %{y}, %{x}-facing: CoolScore %{text}<br>AED %{customdata[0]:,.0f}/yr "
-                  "(%{customdata[1]:.2f} AED/sq ft)<extra></extra>",
-    colorbar=dict(title="CoolScore", tickvals=list(range(5)), ticktext=list(LETTERS)), xgap=2, ygap=2))
-fig.update_layout(height=max(360, 22 * floors), margin=dict(l=10, r=10, t=10, b=10),
-                  xaxis_title="Facade facing", yaxis_title="Floor", paper_bgcolor="rgba(0,0,0,0)")
-st.plotly_chart(fig, width="stretch", config={"displayModeBar": False})
+    grid = df.pivot(index="floor", columns="facing", values="intensity")[list(ORIENTATIONS)].sort_index(ascending=False)
+    letters = df.pivot(index="floor", columns="facing", values="score")[list(ORIENTATIONS)].sort_index(ascending=False)
+    aed = df.pivot(index="floor", columns="facing", values="annual_aed")[list(ORIENTATIONS)].sort_index(ascending=False)
+    # Colour by grade with the app-wide A (green) → E (red) palette; hover gives the exact intensity.
+    LETTERS = "ABCDE"
+    grade = letters.apply(lambda col: col.map(LETTERS.index))
+    scale = []
+    for i, letter in enumerate(LETTERS):
+        scale += [[i / 5, ui.SCORE_COLORS[letter]], [(i + 1) / 5, ui.SCORE_COLORS[letter]]]
+    fig = go.Figure(go.Heatmap(
+        z=grade.values, x=list(ORIENTATIONS), y=[str(f) for f in grid.index], text=letters.values,
+        texttemplate="%{text}", customdata=np.dstack([aed.values, grid.values]),
+        colorscale=scale, zmin=-0.5, zmax=4.5,
+        hovertemplate="Floor %{y}, %{x}-facing: CoolScore %{text}<br>AED %{customdata[0]:,.0f}/yr "
+                      "(%{customdata[1]:.2f} AED/sq ft)<extra></extra>",
+        colorbar=dict(title="CoolScore", tickvals=list(range(5)), ticktext=list(LETTERS)), xgap=2, ygap=2))
+    fig.update_layout(height=max(360, 22 * floors), margin=dict(l=10, r=10, t=10, b=10),
+                      xaxis_title="Facade facing", yaxis_title="Floor", paper_bgcolor="rgba(0,0,0,0)")
+    st.plotly_chart(fig, width="stretch", config={"displayModeBar": False})
 
 impact = compare(ref_df, df)
 m1, m2, m3 = st.columns(3)

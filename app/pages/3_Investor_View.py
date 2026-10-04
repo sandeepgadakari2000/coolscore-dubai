@@ -4,8 +4,8 @@ import ui
 import streamlit as st
 
 ui.setup("Investor View")
-st.title("Investor view")
-st.caption("Yield after the costs a listing doesn't show. Cooling figures are simulated estimates.")
+ui.hero("Investor view", "Yield after the costs a listing doesn't show — cooling and service charges — and the "
+        "rent premium a chiller-free offer has to earn.", eyebrow="Net yield")
 ui.model_ready()
 
 with st.form("inv"):

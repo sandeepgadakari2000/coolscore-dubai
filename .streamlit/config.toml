@@ -1,5 +1,10 @@
 [theme]
-primaryColor = "#2a78d6"
+# Dubai dusk: night navy, desert gold accents, warm ivory text. app/ui.py layers the liquid-glass CSS on top.
+base = "dark"
+primaryColor = "#f5b942"
+backgroundColor = "#0b1030"
+secondaryBackgroundColor = "#1a2046"
+textColor = "#f6f0e6"
 font = "sans serif"
 
 [server]

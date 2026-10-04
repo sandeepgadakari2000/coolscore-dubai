@@ -91,26 +91,48 @@ def test_pages_render(page) -> None:
     _app(page)
 
 
-def test_check_a_unit_parses_prefills_and_answers_fast() -> None:
+def test_check_a_unit_parses_prefills_and_answers_live() -> None:
     at = _app("pages/1_Check_a_Unit.py")
     at.text_area[0].input(LISTING_TEXT).run()
-    at.button[0].click().run()
+    at.button[0].click().run()                          # "Read listing"
     assert at.number_input(key="chk1_size").value == 812
     t0 = time.time()
-    at.button(key="FormSubmitter:check-Estimate cooling cost").click().run()
+    at.number_input(key="chk1_floor").set_value(9).run()   # no submit: every change re-estimates
     assert time.time() - t0 < 3.0                       # brief §12: answer in under 3 s
-    assert not at.exception
+    assert not at.exception, [e.value for e in at.exception]
     text = " ".join(m.value for m in at.markdown)
-    assert "AED" in text and "Questions" in " ".join(m.value for m in at.markdown) + text
+    assert "AED" in text and "Questions to ask the agent" in text
+    assert any(m.label == "Typical annual cost" for m in at.metric)
 
 
 def test_example_listing_answers_in_one_click() -> None:
     at = _app("pages/1_Check_a_Unit.py")
-    [b for b in at.button if b.label.startswith("No listing to hand")][0].click().run()
+    [b for b in at.button if b.label == "Try an example"][0].click().run()
     assert not at.exception, [e.value for e in at.exception]
     assert at.text_area(key="listing_text").value.startswith("Bright 1 bedroom")
-    assert "Result" in [h.value for h in at.subheader]
     assert not at.session_state.parse_result.missing      # the example states every required fact
+    assert at.select_slider(key="chk_month").value == "Aug"
+    at.select_slider(key="chk_month").set_value("Jan").run()   # the month moves the scene and the chart
+    assert not at.exception, [e.value for e in at.exception]
+
+
+def test_stage_args_carry_measured_weather_and_consistent_ranges() -> None:
+    sys.path.insert(0, str(ROOT / "app"))
+    import ui
+
+    unit = {**{k: v for k, v in UNIT.items() if k != "annual_rent_aed"}}
+    est = predict.estimate(unit)
+    args = ui.stage_args(est, {**unit, "annual_rent_aed": 90000}, month=7)
+    assert args["site"] == "central" and len(args["months"]) == 12 and args["unit"]["facing"] == ["W"]
+    aug, jan = args["months"][7], args["months"][0]
+    assert aug["tmax"] > jan["tmax"] + 10                     # measured: August is far hotter than January
+    w = aug["hourly"]["facade"]["W"]
+    assert max(range(24), key=lambda h: w[h]) >= 14           # west sun peaks in the afternoon
+    r = args["result"]
+    assert r["month_ranges"][7] == [round(est.summer_month.p10), round(est.summer_month.p50), round(est.summer_month.p90)]
+    assert all(lo <= mid <= hi for lo, mid, hi in r["month_ranges"])
+    assert r["true_cost"] > 90000 / 12
+    assert ui.stage_args(None, unit, month=0)["result"] is None
 
 
 @pytest.mark.parametrize("page,button", [("pages/2_Compare_Units.py", "Compare"),

@@ -10,8 +10,8 @@ from coolscore import assumptions_doc, config
 from coolscore.validation import report as validation
 
 ui.setup("Methodology")
-st.title("Methodology & validation")
-st.markdown(f"<span class='cs-sim'>{ui.SIMULATED}</span>", unsafe_allow_html=True)
+ui.hero("Methodology & validation", "How an estimate is made, how accurate the model is against the physics, "
+        "where real-bill validation stands, every assumption with its source, and the limits.", eyebrow="Open book")
 
 
 @st.cache_data(show_spinner=False, ttl=600)

@@ -1,0 +1,592 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CoolScore climate stage</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap">
+<!--
+  The live Dubai climate scene for CoolScore (a Streamlit component with no build step).
+
+  Python sends the unit and a typical month of *measured* Dubai weather (hourly temperature,
+  humidity, cloud, sun position and sun on each facade, 2023-25). The scene plays that day on a
+  loop: the sun follows the real sun path, the sky warms with the real temperature, haze follows
+  humidity and dust, clouds follow cloud cover, and the unit's windows glow when the sun is really
+  on its facade. Each rerun only sends new values; the iframe persists, so everything tweens.
+-->
+<style>
+  :root { --score: #c99400; --glass: rgba(255, 255, 255, .10); --line: rgba(255, 255, 255, .18); }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: transparent; overflow: hidden; color: #f7f1e7;
+    font-family: Outfit, "Segoe UI Variable", "Segoe UI", system-ui, -apple-system, sans-serif; }
+  .stage { position: relative; border-radius: 26px; overflow: hidden; isolation: isolate;
+    background: linear-gradient(180deg, #121733 0%, #0a0d1f 100%);
+    box-shadow: 0 18px 50px rgba(0, 0, 0, .45), inset 0 0 0 1px rgba(255, 255, 255, .12); }
+  .scene { display: block; width: 100%; height: clamp(250px, 56vw, 420px); }
+  .chips { position: absolute; z-index: 3; top: 12px; left: 12px; right: 12px; display: flex; justify-content: space-between;
+    align-items: flex-start; gap: 8px; pointer-events: none; }
+  .chip { padding: .5rem .8rem; border-radius: 16px; line-height: 1.25; min-width: 0;
+    background: linear-gradient(135deg, rgba(255, 255, 255, .16), rgba(255, 255, 255, .05));
+    border: 1px solid var(--line); backdrop-filter: blur(14px) saturate(170%);
+    -webkit-backdrop-filter: blur(14px) saturate(170%);
+    box-shadow: 0 6px 24px rgba(0, 0, 0, .25), inset 0 1px 0 rgba(255, 255, 255, .25); }
+  .chip.tl { max-width: 52%; }
+  .chip.tr { text-align: right; max-width: 48%; }
+  .place, .meta { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .eyebrow { font-size: .68rem; letter-spacing: .14em; text-transform: uppercase; opacity: .78; }
+  .place { font-weight: 600; font-size: 1rem; }
+  .zone { display: inline-block; margin-top: .25rem; font-size: .7rem; padding: .05rem .5rem; border-radius: 999px;
+    background: rgba(255, 255, 255, .14); border: 1px solid rgba(255, 255, 255, .2); }
+  .clock { font-size: .8rem; opacity: .85; font-variant-numeric: tabular-nums; }
+  .temp { font-size: 2rem; font-weight: 600; line-height: 1; font-variant-numeric: tabular-nums; }
+  .temp small { font-size: .9rem; font-weight: 400; opacity: .8; }
+  .meta { font-size: .72rem; opacity: .82; margin-top: .2rem; }
+  .compass { position: absolute; z-index: 3; left: 14px; top: 104px; width: 92px; height: 92px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(255, 255, 255, .14), rgba(255, 255, 255, .04));
+    border: 1px solid var(--line); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+  .panel { position: relative; z-index: 4; margin: -52px 12px 12px; padding: .9rem 1rem; border-radius: 22px;
+    display: grid; grid-template-columns: auto 1fr 1fr 1fr; gap: .4rem 1.1rem; align-items: center;
+    background: linear-gradient(135deg, rgba(255, 255, 255, .17), rgba(255, 255, 255, .06));
+    border: 1px solid rgba(255, 255, 255, .22); backdrop-filter: blur(18px) saturate(180%);
+    -webkit-backdrop-filter: blur(18px) saturate(180%);
+    box-shadow: 0 10px 34px rgba(0, 0, 0, .35), inset 0 1px 0 rgba(255, 255, 255, .3),
+      inset 0 -1px 0 rgba(255, 255, 255, .06); }
+  .panel::before { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+    background: radial-gradient(120% 80% at 0% 0%, rgba(255, 255, 255, .22), transparent 45%); }
+  .ring { width: 78px; height: 78px; grid-row: span 2; }
+  .kpi .label { font-size: .7rem; letter-spacing: .06em; text-transform: uppercase; opacity: .72; }
+  .kpi .value { font-size: 1.22rem; font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .kpi .sub { font-size: .72rem; opacity: .7; }
+  .sunbar { grid-column: 2 / -1; display: flex; align-items: center; gap: .6rem; font-size: .76rem; }
+  .sunbar .track { flex: 1; height: 8px; border-radius: 99px; background: rgba(255, 255, 255, .12); overflow: hidden; }
+  .sunbar .fill { height: 100%; width: 0; border-radius: inherit;
+    background: linear-gradient(90deg, #7cc4ff, #ffd36e 45%, #ff7a3d 80%, #ff4d3d); }
+  .sunbar b { font-variant-numeric: tabular-nums; }
+  .dots { position: absolute; z-index: 3; right: 16px; top: 104px; display: flex; flex-direction: column; gap: 4px; }
+  .dots i { width: 6px; height: 6px; border-radius: 50%; background: rgba(255, 255, 255, .3); transition: all .5s; }
+  .dots i.on { background: #ffd36e; box-shadow: 0 0 8px #ffd36e; transform: scale(1.4); }
+  .empty { grid-column: 1 / -1; text-align: center; opacity: .85; padding: .4rem 0; }
+  /* scene animations */
+  .rays { animation: spin 60s linear infinite; transform-origin: 0 0; }
+  .cloud { animation: drift linear infinite; }
+  .dust circle { animation: dust linear infinite; }
+  .wave { animation: wave 6s linear infinite; }
+  .boat { animation: bob 5s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+  .twinkle { animation: twinkle 3.4s ease-in-out infinite; }
+  .fade { transition: opacity .7s ease; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes drift { from { transform: translateX(-420px); } to { transform: translateX(1420px); } }
+  @keyframes dust { from { transform: translate(0, 0); } to { transform: translate(260px, -40px); } }
+  @keyframes wave { to { stroke-dashoffset: -60; } }
+  @keyframes bob { 0%, 100% { transform: translateY(0) rotate(-1deg); } 50% { transform: translateY(3px) rotate(1deg); } }
+  @keyframes twinkle { 0%, 100% { opacity: .25; } 50% { opacity: 1; } }
+  @media (max-width: 560px) {
+    .panel { grid-template-columns: auto 1fr 1fr; margin-top: -40px; }
+    .panel .kpi.year { display: none; }
+    .temp { font-size: 1.5rem; } .chip { padding: .4rem .6rem; } .place { font-size: .9rem; }
+    .meta { white-space: normal; font-size: .66rem; }
+    .compass { width: 64px; height: 64px; top: 96px; }
+    .kpi .value { font-size: 1.02rem; }
+    .sunbar { flex-wrap: wrap; row-gap: .25rem; } .sunbar span { width: 100%; }
+  }
+  @media (max-width: 420px) { .compass { display: none; } .zone { display: none; } }
+  @media (prefers-reduced-motion: reduce) {
+    .rays, .cloud, .dust circle, .wave, .boat, .twinkle { animation: none !important; }
+  }
+</style>
+</head>
+<body>
+<div class="stage" id="stage">
+  <svg class="scene" id="scene" viewBox="0 0 1000 560" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+    <defs>
+      <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+        <stop id="sky0" offset="0"/><stop id="sky1" offset=".58"/><stop id="sky2" offset="1"/>
+      </linearGradient>
+      <radialGradient id="sunGlow">
+        <stop offset="0" stop-color="#fffbe8" stop-opacity="1"/>
+        <stop offset=".18" stop-color="#fff2c4" stop-opacity=".9"/>
+        <stop id="glowMid" offset=".45" stop-color="#ffb347" stop-opacity=".35"/>
+        <stop offset="1" stop-color="#ff8a3d" stop-opacity="0"/>
+      </radialGradient>
+      <linearGradient id="haze" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#fff1d6" stop-opacity="0"/>
+        <stop offset=".55" stop-color="#ffe2b5" stop-opacity=".25"/>
+        <stop offset="1" stop-color="#ffd59a" stop-opacity=".85"/>
+      </linearGradient>
+      <linearGradient id="sea" x1="0" y1="0" x2="0" y2="1">
+        <stop id="sea0" offset="0"/><stop id="sea1" offset="1"/>
+      </linearGradient>
+      <linearGradient id="sand1" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#e8bf83"/><stop offset="1" stop-color="#b9834d"/>
+      </linearGradient>
+      <linearGradient id="sand2" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#d6a76a"/><stop offset="1" stop-color="#9a6a3e"/>
+      </linearGradient>
+      <linearGradient id="glassFace" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#3a4b7a"/><stop offset=".5" stop-color="#1f2a4d"/><stop offset="1" stop-color="#151c38"/>
+      </linearGradient>
+      <filter id="shimmer" x="-5%" y="-5%" width="110%" height="110%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.012 0.09" numOctaves="1" seed="4" result="n">
+          <animate attributeName="baseFrequency" dur="5s" values="0.012 0.09;0.016 0.12;0.012 0.09" repeatCount="indefinite"/>
+        </feTurbulence>
+        <feDisplacementMap id="shimmerMap" in="SourceGraphic" in2="n" scale="0" xChannelSelector="R" yChannelSelector="G"/>
+      </filter>
+      <filter id="glow" x="-50%" y="-200%" width="200%" height="500%"><feGaussianBlur stdDeviation="6"/></filter>
+      <filter id="soft"><feGaussianBlur stdDeviation="1.4"/></filter>
+    </defs>
+    <rect width="1000" height="560" fill="url(#sky)"/>
+    <g id="stars"></g>
+    <g id="sunGroup"><circle r="150" fill="url(#sunGlow)" id="sunHalo"/><g class="rays" id="rays"></g>
+      <circle r="26" fill="#fffaf0" id="sunCore"/></g>
+    <g id="clouds"></g>
+    <g id="far" filter="url(#shimmer)"></g>
+    <rect id="hazeRect" width="1000" height="440" fill="url(#haze)" opacity="0"/>
+    <g id="dust" class="dust"></g>
+    <g id="mid"></g>
+    <polygon id="beam" fill="#ffd27a" opacity="0" style="mix-blend-mode:screen"/>
+    <g id="unit"></g>
+    <g id="ground"></g>
+    <g id="labels"></g>
+  </svg>
+
+  <div class="chips">
+    <div class="chip tl"><div class="eyebrow" id="eyebrow">Typical day</div><div class="place" id="place">Dubai</div>
+      <span class="zone" id="zone">Central</span></div>
+    <div class="chip tr"><div class="clock" id="clock">12:00</div><div class="temp"><span id="tempNow">--</span>°<small>C</small></div>
+      <div class="meta" id="metaNow">humidity -- %</div></div>
+  </div>
+  <div class="compass" id="compassBox" title="Plan view: north is up. Gold = the way your windows face; the dot is the sun.">
+    <svg viewBox="-50 -50 100 100" width="100%" height="100%" id="compass">
+      <circle r="44" fill="none" stroke="rgba(255,255,255,.22)" stroke-width="1"/>
+      <circle r="24" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="1"/>
+      <g id="wedges"></g>
+      <g font-size="9" fill="rgba(255,255,255,.75)" text-anchor="middle" font-family="Outfit, sans-serif">
+        <text y="-33">N</text><text x="35" y="3">E</text><text y="40">S</text><text x="-35" y="3">W</text></g>
+      <rect x="-7" y="-7" width="14" height="14" rx="2" fill="rgba(255,255,255,.75)"/>
+      <circle id="sunDot" r="5" fill="#ffd36e" stroke="#fff" stroke-width="1"/>
+    </svg>
+  </div>
+  <div class="dots" id="dots"></div>
+
+  <div class="panel" id="panel">
+    <svg class="ring" viewBox="-50 -50 100 100" id="ring"></svg>
+    <div class="kpi"><div class="label" id="monthLabel">Cooling this month</div>
+      <div class="value" id="monthValue">—</div><div class="sub" id="monthSub">typical P10–P90</div></div>
+    <div class="kpi year"><div class="label">Whole year</div><div class="value" id="yearValue">—</div>
+      <div class="sub" id="yearSub">P10–P90</div></div>
+    <div class="kpi"><div class="label" id="trueLabel">True monthly cost</div><div class="value" id="trueValue">—</div>
+      <div class="sub" id="trueSub">rent + cooling + fee</div></div>
+    <div class="sunbar"><span id="sunLabel">Sun on your windows</span><div class="track"><div class="fill" id="sunFill"></div></div>
+      <b id="sunValue">0 W/m²</b></div>
+  </div>
+</div>
+
+<script>
+"use strict";
+const RM = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const NS = "http://www.w3.org/2000/svg";
+const ORIENT = { N: 0, NE: 45, E: 90, SE: 135, S: 180, SW: 225, W: 270, NW: 315 };
+const LETTERS = ["A", "B", "C", "D", "E"];
+const MONTH_NAMES = ["January", "February", "March", "April", "May", "June", "July", "August", "September",
+  "October", "November", "December"];
+const ZONE_LABEL = { coastal: "Coastal · sea breeze", central: "Central · city core", inland: "Inland · desert edge" };
+const GROUND_Y = 404, TOWER_H = 286, TOWER_X = 548, TOWER_W = 78;
+const FIXED_HOUR = parseFloat(new URLSearchParams(location.search).get("hour"));   // for screenshots/tests
+const $ = (id) => document.getElementById(id);
+
+// ---------- Streamlit component protocol (what streamlit-component-lib does, without a build step) ----------
+function send(type, data) { window.parent.postMessage(Object.assign({ isStreamlitMessage: true, type }, data || {}), "*"); }
+function reportHeight() { send("streamlit:setFrameHeight", { height: Math.ceil($("stage").getBoundingClientRect().height) + 2 }); }
+window.addEventListener("message", (e) => { if (e.data && e.data.type === "streamlit:render") onRender(e.data.args || {}); });
+new ResizeObserver(reportHeight).observe(document.body);
+
+// ---------- small helpers ----------
+function el(tag, attrs, parent) {
+  const n = document.createElementNS(NS, tag);
+  for (const k in attrs) n.setAttribute(k, attrs[k]);
+  if (parent) parent.appendChild(n);
+  return n;
+}
+function rng(seed) { return () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed);
+  t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+const lerp = (a, b, t) => a + (b - a) * t;
+const ease = (t) => 1 - Math.pow(1 - t, 3);
+function hex(c) { const n = parseInt(c.slice(1), 16); return [n >> 16 & 255, n >> 8 & 255, n & 255]; }
+function mix(c1, c2, t) { const a = hex(c1), b = hex(c2);
+  return "#" + a.map((v, i) => Math.round(lerp(v, b[i], clamp(t))).toString(16).padStart(2, "0")).join(""); }
+function mix3(c1, c2, c3, t) { return t < .5 ? mix(c1, c2, t * 2) : mix(c2, c3, (t - .5) * 2); }
+const aed = (x) => "AED " + Math.round(x).toLocaleString("en-US");
+function angLerp(a, b, t) { let d = ((b - a + 540) % 360) - 180; return (a + d * t + 360) % 360; }
+
+// ---------- state ----------
+let args = null, monthFrom = null, monthTo = null, blendT0 = 0, tourMonth = 0;
+let hour = 14.5, lastFrame = performance.now(), sceneKey = "", unitKey = "", lastSite = null, lastDaylight = 1;
+const shown = {};                    // tweened numbers on the panel
+const tw = { band: 0, n1: 0, n2: 0, facing: [270] };   // tweened geometry
+
+function blendMonths(a, b, k) {
+  if (!a || k >= 1) return b;
+  const out = { month: b.month, hourly: { facade: {} } };
+  for (const f of ["tmax", "tmin", "rh", "cloud", "haze", "wind", "dewpoint"]) out[f] = lerp(a[f], b[f], k);
+  for (const f of ["temp", "rh", "cloud", "elev"]) out.hourly[f] = a.hourly[f].map((v, i) => lerp(v, b.hourly[f][i], k));
+  out.hourly.az = a.hourly.az.map((v, i) => angLerp(v, b.hourly.az[i], k));
+  for (const o in b.hourly.facade) out.hourly.facade[o] = a.hourly.facade[o].map((v, i) => lerp(v, b.hourly.facade[o][i], k));
+  return out;
+}
+function currentMonth(now) { return blendMonths(monthFrom, monthTo, ease(clamp((now - blendT0) / 1200))); }
+function at(arr, h, angle) {        // value at fractional hour (hour h = mean of the hour ending at h)
+  const i = Math.floor(h) % 24, j = (i + 1) % 24, f = h - Math.floor(h);
+  return angle ? angLerp(arr[i], arr[j], f) : lerp(arr[i], arr[j], f);
+}
+function setMonth(m) {
+  const now = performance.now();
+  monthFrom = monthTo ? currentMonth(now) : null;
+  monthTo = m; blendT0 = now;
+}
+
+// ---------- scene construction ----------
+function buildSky() {
+  const r = rng(7), stars = $("stars");
+  for (let i = 0; i < 70; i++) el("circle", { cx: r() * 1000, cy: r() * 300, r: r() * 1.3 + .3, fill: "#fff",
+    class: i % 3 ? "" : "twinkle", style: `animation-delay:${-r() * 4}s` }, stars);
+  const rays = $("rays");
+  for (let i = 0; i < 16; i++) { const a = i * Math.PI / 8;
+    el("line", { x1: Math.cos(a) * 38, y1: Math.sin(a) * 38, x2: Math.cos(a) * (i % 2 ? 62 : 78), y2: Math.sin(a) * (i % 2 ? 62 : 78),
+      stroke: "#ffe7a8", "stroke-width": i % 2 ? 2 : 3, "stroke-linecap": "round", opacity: .55 }, rays); }
+  const clouds = $("clouds");
+  for (let i = 0; i < 6; i++) {
+    const g = el("g", { class: "cloud", style: `animation-duration:${90 + r() * 80}s;animation-delay:${-r() * 160}s` }, clouds);
+    const y = 50 + r() * 170, s = .6 + r() * .8;
+    for (let j = 0; j < 5; j++) el("ellipse", { cx: (j - 2) * 34 * s, cy: y - Math.sin(j / 4 * Math.PI) * 18 * s,
+      rx: (36 + r() * 18) * s, ry: (18 + r() * 9) * s, class: "puff" }, g);
+  }
+  const dust = $("dust");
+  for (let i = 0; i < 46; i++) el("circle", { cx: r() * 1000 - 200, cy: 250 + r() * 200, r: r() * 1.6 + .4, fill: "#f3d6a4",
+    style: `animation-duration:${9 + r() * 10}s;animation-delay:${-r() * 18}s` }, dust);
+}
+
+function tower(g, x, w, h, r, fillVar, cap) {
+  const top = GROUND_Y - h;
+  el("rect", { x, y: top, width: w, height: h, style: `fill:var(${fillVar})` }, g);
+  if (cap === 1) el("polygon", { points: `${x},${top} ${x + w / 2},${top - h * .12} ${x + w},${top}`, style: `fill:var(${fillVar})` }, g);
+  if (cap === 2) el("rect", { x: x + w / 2 - 1.5, y: top - h * .18, width: 3, height: h * .18, style: `fill:var(${fillVar})` }, g);
+  if (cap === 3) el("polygon", { points: `${x},${top} ${x + w},${top - h * .08} ${x + w},${top}`, style: `fill:var(${fillVar})` }, g);
+  return top;
+}
+
+function buildCity(zone) {
+  const far = $("far"), mid = $("mid"), ground = $("ground");
+  for (const g of [far, mid, ground]) g.replaceChildren();
+  const r = rng(zone === "coastal" ? 11 : zone === "central" ? 23 : 37);
+  const density = zone === "inland" ? .45 : zone === "central" ? 1.1 : .85;
+  const hScale = zone === "inland" ? .55 : 1;
+  let x = -10;
+  const lights = el("g", { id: "lights" });
+  while (x < 1010) {                                     // far skyline: generic, fictional towers
+    const w = 18 + r() * 30, h = (90 + r() * 170) * hScale;
+    if (r() < density) {
+      const top = tower(far, x, w, h, r, "--far", Math.floor(r() * 4));
+      for (let k = 0; k < h / 14; k++) if (r() < .35) el("rect", { x: x + 3 + r() * (w - 8), y: top + 6 + k * 14, width: 3, height: 2,
+        fill: "#ffd98a", class: r() < .2 ? "twinkle" : "", style: `animation-delay:${-r() * 3}s` }, lights);
+    }
+    x += w + 2 + r() * 14;
+  }
+  far.appendChild(lights);                               // lit windows sit in front of their towers
+  x = -20;
+  while (x < 1020) {                                     // mid layer, leaving room around the unit's tower
+    const w = 34 + r() * 40, h = (140 + r() * 150) * hScale;
+    if ((x + w < TOWER_X - 110 || x > TOWER_X + TOWER_W + 110) && r() < density * .8) tower(mid, x, w, h, r, "--mid", Math.floor(r() * 4));
+    x += w + 10 + r() * 40;
+  }
+  if (zone === "coastal") {                              // the Gulf: water, waves, sun glitter, boats, palms
+    el("rect", { x: 0, y: GROUND_Y, width: 1000, height: 160, fill: "url(#sea)" }, ground);
+    for (let i = 0; i < 7; i++) el("path", { d: `M0 ${GROUND_Y + 14 + i * 16} Q 250 ${GROUND_Y + 10 + i * 16} 500 ${GROUND_Y + 14 + i * 16} T 1000 ${GROUND_Y + 14 + i * 16}`,
+      fill: "none", stroke: "rgba(255,255,255,.22)", "stroke-width": 1.2, "stroke-dasharray": "18 42", class: "wave",
+      style: `animation-duration:${5 + i}s` }, ground);
+    el("g", { id: "glitter" }, ground);
+    for (const [bx, by, s] of [[180, 470, 1], [820, 492, .8]]) {
+      const b = el("g", { class: "boat", transform: `translate(${bx} ${by}) scale(${s})` }, ground);
+      el("path", { d: "M-26 0 L26 0 L18 9 L-18 9 Z", fill: "#e9e4da" }, b);
+      el("path", { d: "M-2 -2 L-2 -34 L20 -4 Z", fill: "#f7f3ea" }, b);
+    }
+    el("rect", { x: 0, y: GROUND_Y - 6, width: 1000, height: 8, fill: "#c9a46b", opacity: .55 }, ground);
+  } else if (zone === "central") {                       // canal and promenade
+    el("rect", { x: 0, y: GROUND_Y, width: 1000, height: 160, fill: "#0e1328" }, ground);
+    el("rect", { x: 0, y: GROUND_Y + 40, width: 1000, height: 34, fill: "url(#sea)" }, ground);
+    for (let i = 0; i < 3; i++) el("path", { d: `M0 ${GROUND_Y + 50 + i * 9} Q 250 ${GROUND_Y + 47 + i * 9} 500 ${GROUND_Y + 50 + i * 9} T 1000 ${GROUND_Y + 50 + i * 9}`,
+      fill: "none", stroke: "rgba(255,255,255,.2)", "stroke-width": 1, "stroke-dasharray": "14 36", class: "wave" }, ground);
+    el("g", { id: "glitter" }, ground);
+    el("rect", { x: 0, y: GROUND_Y, width: 1000, height: 6, fill: "#2b3150" }, ground);
+    for (let i = 0; i < 26; i++) el("circle", { cx: 20 + i * 39, cy: GROUND_Y + 24, r: 1.6, fill: "#ffd98a", class: "twinkle lamp",
+      style: `animation-delay:${-i * .3}s` }, ground);
+  } else {                                               // inland: dunes and low-rise
+    el("path", { d: `M0 ${GROUND_Y + 10} C 180 ${GROUND_Y - 25} 320 ${GROUND_Y + 25} 520 ${GROUND_Y} S 860 ${GROUND_Y - 30} 1000 ${GROUND_Y + 5} L1000 560 L0 560Z`, fill: "url(#sand1)" }, ground);
+    el("path", { d: `M0 ${GROUND_Y + 60} C 220 ${GROUND_Y + 25} 420 ${GROUND_Y + 80} 640 ${GROUND_Y + 50} S 900 ${GROUND_Y + 30} 1000 ${GROUND_Y + 55} L1000 560 L0 560Z`, fill: "url(#sand2)" }, ground);
+    el("path", { d: `M0 ${GROUND_Y + 60} C 220 ${GROUND_Y + 25} 420 ${GROUND_Y + 80} 640 ${GROUND_Y + 50}`, fill: "none", stroke: "rgba(255,240,210,.35)", "stroke-width": 1.5 }, ground);
+  }
+  const palms = zone === "inland" ? [[90, 1.05], [930, .9]] : [[60, 1], [410, .85], [905, 1.1]];
+  for (const [px, s] of palms) {                         // palm silhouettes
+    const p = el("g", { transform: `translate(${px} ${GROUND_Y + (zone === "inland" ? 18 : 2)}) scale(${s})` }, ground);
+    el("path", { d: "M-2 0 C 0 -22 -4 -44 2 -66 L6 -66 C 2 -44 6 -22 4 0 Z", fill: "#0b0f1f" }, p);
+    for (const [dx, dy, cx, cy] of [[-34, -50, -16, -80], [36, -48, 18, -82], [-30, -66, -12, -86], [32, -64, 14, -88],
+      [-12, -44, -8, -76], [14, -42, 10, -78], [2, -90, 4, -84]])
+      el("path", { d: `M4 -68 Q ${cx} ${cy} ${dx} ${dy}`, fill: "none", stroke: "#0b0f1f", "stroke-width": 5, "stroke-linecap": "round" }, p);
+  }
+}
+
+function buildUnit(u) {
+  const g = $("unit"); g.replaceChildren(); $("labels").replaceChildren();
+  const n = Math.max(1, u.total_floors), rowH = TOWER_H / n;
+  const glassFrac = { low: .38, medium: .58, high: .76, floor_to_ceiling: .92 }[u.glass] || .58;
+  el("rect", { id: "nb1", x: TOWER_X - 92, width: 70, y: GROUND_Y, height: 0, style: "fill:var(--mid)" }, g);
+  el("rect", { id: "nb2", x: TOWER_X + TOWER_W + 18, width: 64, y: GROUND_Y, height: 0, style: "fill:var(--mid)" }, g);
+  el("rect", { x: TOWER_X, y: GROUND_Y - TOWER_H, width: TOWER_W, height: TOWER_H, fill: "url(#glassFace)",
+    stroke: "rgba(255,255,255,.22)", "stroke-width": 1 }, g);
+  el("polygon", { points: `${TOWER_X},${GROUND_Y - TOWER_H} ${TOWER_X + TOWER_W},${GROUND_Y - TOWER_H - 22} ${TOWER_X + TOWER_W},${GROUND_Y - TOWER_H}`,
+    fill: "#2a3762" }, g);
+  const win = el("g", { opacity: .9 }, g), step = Math.max(rowH, 3.2);
+  for (let y = GROUND_Y - TOWER_H + 2; y < GROUND_Y - 2; y += step)
+    for (let c = 0; c < 5; c++) {
+      const cw = (TOWER_W - 8) / 5;
+      el("rect", { x: TOWER_X + 4 + c * cw + cw * (1 - glassFrac) / 2, y, width: cw * glassFrac, height: Math.max(step - 1.4, 1.6),
+        fill: "rgba(160,200,255,.16)", class: "win" }, win);
+    }
+  el("rect", { id: "bandGlow", x: TOWER_X - 6, width: TOWER_W + 12, height: 18, fill: "#ffb347", opacity: 0, filter: "url(#glow)" }, g);
+  el("rect", { id: "band", x: TOWER_X + 1, width: TOWER_W - 2, height: Math.max(rowH, 5), fill: "#9fd8ff", rx: 1 }, g);
+  const depth = { none: 0, small: 4, deep: 8 }[u.balcony] || 0;
+  if (depth) el("rect", { id: "ledge", x: TOWER_X - depth, width: TOWER_W + depth * 2, height: depth / 3 + 1.5, fill: "#cfd6e6" }, g);
+  const pin = el("g", { id: "pin" }, $("labels"));
+  el("line", { x1: TOWER_X + TOWER_W + 4, x2: TOWER_X + TOWER_W + 120, y1: 0, y2: 0, stroke: "rgba(255,255,255,.7)", "stroke-width": 1 }, pin);
+  el("circle", { cx: TOWER_X + TOWER_W + 4, cy: 0, r: 3, fill: "#fff" }, pin);
+  el("rect", { x: TOWER_X + TOWER_W + 120, y: -15, width: 170, height: 30, rx: 15, fill: "rgba(12,16,36,.62)",
+    stroke: "rgba(255,255,255,.35)" }, pin);
+  const t = el("text", { x: TOWER_X + TOWER_W + 205, y: 5, "text-anchor": "middle", "font-size": 14, fill: "#fff",
+    "font-family": "Outfit, sans-serif" }, pin);
+  t.textContent = `Your flat · floor ${u.floor} · ${u.facing.join("+")}`;
+}
+
+function buildWedges(facings) {
+  const g = $("wedges"); g.replaceChildren();
+  for (let i = 0; i < facings.length; i++) {
+    const p = el("path", { d: "M0 0 L-15.6 -40.4 A 44 44 0 0 1 15.6 -40.4 Z", fill: "#ffd36e", opacity: .5, class: "wedge" }, g);
+    p.dataset.i = i;
+  }
+}
+
+function buildRing(letter, colors) {
+  const g = $("ring"); g.replaceChildren();
+  LETTERS.forEach((L, i) => {
+    const a0 = (-90 + i * 72 + 4) * Math.PI / 180, a1 = (-90 + (i + 1) * 72 - 4) * Math.PI / 180, R = 40;
+    el("path", { d: `M ${R * Math.cos(a0)} ${R * Math.sin(a0)} A ${R} ${R} 0 0 1 ${R * Math.cos(a1)} ${R * Math.sin(a1)}`,
+      fill: "none", stroke: colors[L], "stroke-width": L === letter ? 9 : 5, "stroke-linecap": "round",
+      opacity: L === letter ? 1 : .35, style: "transition:all .6s" }, g);
+  });
+  const c = el("text", { y: 12, "text-anchor": "middle", "font-size": 36, "font-weight": 700, fill: colors[letter] || "#fff",
+    "font-family": "Outfit, sans-serif" }, g);
+  c.textContent = letter;
+  const s = el("text", { y: 27, "text-anchor": "middle", "font-size": 8.5, fill: "rgba(255,255,255,.75)", "letter-spacing": 1.2,
+    "font-family": "Outfit, sans-serif" }, g);
+  s.textContent = "COOLSCORE";
+}
+
+// ---------- per-render ----------
+function tweenText(id, value, fmt) {
+  const node = $(id), from = shown[id] ?? value, t0 = performance.now();
+  shown[id] = value;
+  if (RM || from === value) { node.textContent = fmt(value); return; }
+  (function step(now) {
+    const k = ease(clamp((now - t0) / 650));
+    node.textContent = fmt(Array.isArray(value) ? value.map((v, i) => lerp(from[i], v, k)) : lerp(from, value, k));
+    if (k < 1) requestAnimationFrame(step);
+  })(t0);
+}
+
+function onRender(a) {
+  args = a;
+  const zone = a.zone || "central";
+  if (zone !== sceneKey) { sceneKey = zone; buildCity(zone); }
+  const u = a.unit || {};
+  const uk = JSON.stringify([u.total_floors, u.glass, u.balcony, u.floor, (u.facing || []).join("+")]);
+  if (uk !== unitKey) { unitKey = uk; buildUnit(u); buildWedges(u.facing || ["S"]); }
+  tw.facingTarget = (u.facing || ["S"]).map((f) => ORIENT[f] ?? 180);
+  tw.bandTarget = GROUND_Y - (clamp((u.floor - .5) / Math.max(u.total_floors, 1)) * TOWER_H);
+  const nbH = { open: [0, 0], partial: [.5, .42], heavy: [.88, .8] }[u.obstruction] || [.5, .42];
+  tw.n1Target = nbH[0] * TOWER_H; tw.n2Target = nbH[1] * TOWER_H;
+
+  $("place").textContent = a.community || "Dubai";
+  $("zone").textContent = ZONE_LABEL[zone] || zone;
+  const months = a.months || [];
+  if (a.mode === "tour") {
+    if (!monthTo) { tourMonth = a.month || 0; setMonth(months[tourMonth]); hour = 13; }   // open on a hot afternoon
+    const dots = $("dots");
+    if (dots.children.length !== 12) { dots.replaceChildren(); for (let i = 0; i < 12; i++) dots.appendChild(document.createElement("i")); }
+  } else if (months[a.month] && (!monthTo || monthTo.month !== months[a.month].month || a.site !== lastSite)) {
+    setMonth(months[a.month]);
+  }
+  lastSite = a.site;
+  renderPanel();
+  reportHeight();
+}
+
+function renderPanel() {
+  const a = args, r = a.result, mIdx = a.mode === "tour" ? tourMonth : a.month;
+  const mName = MONTH_NAMES[mIdx] || "";
+  $("eyebrow").textContent = `Typical ${mName} day`;
+  $("dots").querySelectorAll("i").forEach((d, i) => d.classList.toggle("on", i === mIdx));
+  if (!r) {
+    $("ring").replaceChildren();
+    for (const id of ["monthValue", "yearValue", "trueValue"]) $(id).textContent = "—";
+    $("monthSub").textContent = a.message || "Fill in the unit to see its cooling cost";
+    return;
+  }
+  buildRing(r.score, r.colors);
+  $("monthLabel").textContent = `Cooling in ${mName.slice(0, 3)} · ${r.payer_short}`;
+  const [lo, p50, hi] = r.month_ranges[mIdx];
+  tweenText("monthValue", [lo, hi], (v) => `${aed(v[0])}–${Math.round(v[1]).toLocaleString("en-US")}`);
+  $("monthSub").textContent = `typical ${aed(p50)} · P10–P90 · simulated`;
+  tweenText("yearValue", [r.annual[0], r.annual[2]], (v) => `${aed(v[0])}–${Math.round(v[1]).toLocaleString("en-US")}`);
+  $("yearSub").textContent = `typical ${aed(r.annual[1])} · P10–P90`;
+  if (r.true_cost) {
+    $("trueLabel").textContent = "True monthly cost";
+    tweenText("trueValue", r.true_cost, (v) => aed(v));
+    $("trueSub").textContent = "rent + cooling + housing fee";
+  } else {
+    $("trueLabel").textContent = "True monthly cost"; $("trueValue").textContent = "Add rent"; shown.trueValue = undefined;
+    $("trueSub").textContent = "to compare homes by real cost";
+  }
+}
+
+// ---------- animation loop ----------
+function frame(now) {
+  requestAnimationFrame(frame);
+  if (!args || !monthTo) return;
+  const dt = Math.min(now - lastFrame, 100); lastFrame = now;
+  const prevHour = hour;
+  // daylight hours play slowly (that is where the sun meets the windows); nights pass quickly
+  const speed = args.mode === "tour" ? (lastDaylight > .3 ? 1.0 : 3.4) : (lastDaylight > .3 ? .8 : 2.8);
+  if (!isNaN(FIXED_HOUR)) hour = FIXED_HOUR; else if (RM) hour = 16; else hour = (hour + dt / 1000 * speed) % 24;
+  if (args.mode === "tour" && hour < prevHour) {          // a new day: the tour moves on a month
+    tourMonth = (tourMonth + 1) % 12; setMonth(args.months[tourMonth]); renderPanel();
+  }
+  const m = currentMonth(now), H = m.hourly;
+  const elev = at(H.elev, hour), az = at(H.az, hour, true), temp = at(H.temp, hour), rh = at(H.rh, hour), cloud = at(H.cloud, hour);
+  const heat = clamp((m.tmax - 22) / 21), day = clamp((elev + 6) / 18), dusk = clamp(1 - Math.abs(elev - 2) / 10) * (elev > -8 ? 1 : 0);
+  const night = 1 - day;
+  lastDaylight = day;
+
+  // sky: night → dusk → day, warmed and washed out by heat
+  const dayTop = mix("#2f6fd6", "#5b8fd0", heat), dayMid = mix("#73aef0", "#f0c98a", heat), dayHor = mix("#cfe7ff", "#ffe6b8", heat);
+  const top = mix(mix("#060a1c", "#1d2252", dusk), dayTop, day);
+  const midc = mix(mix("#0c1236", "#7b3f72", dusk), dayMid, day);
+  const hor = mix(mix("#1b2050", "#ff9455", dusk), dayHor, day);
+  $("sky0").setAttribute("stop-color", top); $("sky1").setAttribute("stop-color", midc); $("sky2").setAttribute("stop-color", hor);
+  $("stars").setAttribute("opacity", (night * night * .9).toFixed(3));
+
+  // sun: real azimuth/elevation (viewed from the south: east on the right, west on the left)
+  const sx = 500 + (az - 180) * -3.2, sy = GROUND_Y - 10 - (elev / 90) * 370;
+  const sunUp = clamp((elev + 3) / 6);
+  $("sunGroup").setAttribute("transform", `translate(${sx.toFixed(1)} ${sy.toFixed(1)})`);
+  $("sunGroup").setAttribute("opacity", sunUp.toFixed(3));
+  $("sunHalo").setAttribute("r", (110 + heat * 90).toFixed(0));
+  $("glowMid").setAttribute("stop-color", mix("#ffd98a", "#ff7a2e", heat));
+  $("sunCore").setAttribute("r", (22 + heat * 8).toFixed(1));
+  $("sunCore").setAttribute("fill", mix(mix("#ff9a4c", "#fffaf0", clamp(elev / 15)), "#fffdf5", heat * .5));
+  $("rays").setAttribute("opacity", (heat * sunUp).toFixed(3));
+
+  // clouds follow measured cloud cover; tinted by light
+  $("clouds").setAttribute("opacity", (clamp(cloud / 55) * (.25 + .75 * clamp(day + dusk))).toFixed(3));
+  $("clouds").style.fill = mix(mix("#2a2f5c", "#ffb08a", dusk), "#ffffff", day);
+
+  // humidity + dust haze, heat shimmer, dust motes
+  $("hazeRect").setAttribute("opacity", (clamp((m.haze - .22) * 2.6 + (rh - 35) / 90) * (.25 + .75 * day) * (.4 + .6 * heat)).toFixed(3));
+  const shim = RM ? 0 : 3.5 * heat * heat * day;
+  $("shimmerMap").setAttribute("scale", shim.toFixed(2));
+  if (shim > .3) $("far").setAttribute("filter", "url(#shimmer)"); else $("far").removeAttribute("filter");
+  $("dust").setAttribute("opacity", (heat * day * clamp(m.haze * 1.6) * .7).toFixed(3));
+
+  // buildings: atmospheric colour, lit windows at night
+  const svg = $("scene");
+  svg.style.setProperty("--far", mix(mix("#0d1130", "#3a2a4a", dusk), mix(hor, "#4b5675", .55), day));
+  svg.style.setProperty("--mid", mix("#080b1f", mix(hor, "#1c2342", .84), day));
+  const lights = $("lights"); if (lights) lights.setAttribute("opacity", (night * .95).toFixed(3));
+  document.querySelectorAll(".lamp").forEach((l) => l.setAttribute("opacity", (night * .9 + .05).toFixed(2)));
+  $("sea0") && $("sea0").setAttribute("stop-color", mix("#0a1a3a", mix(hor, "#2a6fb0", .55), day));
+  $("sea1") && $("sea1").setAttribute("stop-color", mix("#040a1c", "#0f3d6e", day));
+
+  // the unit: tween geometry, then colour the window band by sun on its facade(s)
+  const k = RM ? 1 : .12;
+  tw.band = tw.band ? lerp(tw.band, tw.bandTarget, k) : tw.bandTarget;
+  tw.n1 = lerp(tw.n1, tw.n1Target, k); tw.n2 = lerp(tw.n2, tw.n2Target, k);
+  if (!tw.facing || tw.facing.length !== tw.facingTarget.length) tw.facing = tw.facingTarget.slice();
+  tw.facing = tw.facing.map((f, i) => angLerp(f, tw.facingTarget[i], k));
+  const u = args.unit || {}, facings = u.facing || ["S"];
+  let irr = 0;
+  for (const f of facings) irr = Math.max(irr, at(H.facade[f] || H.facade.S, hour));
+  const shade = { none: 1, small: .85, deep: .68 }[u.balcony] || 1;
+  const glow = clamp(irr / 650) * shade;
+  const bandH = Math.max(TOWER_H / Math.max(u.total_floors || 30, 1), 5);
+  const band = $("band"), bg = $("bandGlow"), ledge = $("ledge"), pin = $("pin");
+  if (band) {
+    band.setAttribute("y", (tw.band - bandH).toFixed(1));
+    band.setAttribute("fill", glow > .04 ? mix3("#bfe6ff", "#ffc35a", "#ff4d3d", glow) : (night > .6 ? "#ffd98a" : "#bfe6ff"));
+    bg.setAttribute("y", (tw.band - bandH - 6).toFixed(1)); bg.setAttribute("opacity", (glow * .95 + night * .25).toFixed(3));
+    bg.setAttribute("fill", glow > .04 ? mix("#ffc35a", "#ff5a3d", glow) : "#ffd98a");
+    if (ledge) ledge.setAttribute("y", (tw.band + .5).toFixed(1));
+    pin.setAttribute("transform", `translate(0 ${(tw.band - bandH / 2).toFixed(1)})`);
+    $("nb1").setAttribute("y", (GROUND_Y - tw.n1).toFixed(1)); $("nb1").setAttribute("height", tw.n1.toFixed(1));
+    $("nb2").setAttribute("y", (GROUND_Y - tw.n2).toFixed(1)); $("nb2").setAttribute("height", tw.n2.toFixed(1));
+  }
+  // sun beam onto the windows when the sun is really on the facade
+  const beam = $("beam");
+  const bx = facings.some((f) => ORIENT[f] > 180 && ORIENT[f] < 360) ? TOWER_X : TOWER_X + TOWER_W;
+  beam.setAttribute("points", `${sx.toFixed(0)},${sy.toFixed(0)} ${bx},${(tw.band - bandH - 10).toFixed(0)} ${bx},${(tw.band + 10).toFixed(0)}`);
+  beam.setAttribute("opacity", (clamp((irr - 180) / 520) * sunUp * .32 * shade).toFixed(3));
+
+  // glitter on water under the sun
+  const glit = $("glitter");
+  if (glit) {
+    if (!glit.childElementCount) for (let i = 0; i < 14; i++) el("rect", { width: 14 + i % 3 * 8, height: 1.6, rx: 1, fill: "#fff7dc", class: "twinkle",
+      style: `animation-delay:${-i * .27}s` }, glit);
+    [...glit.children].forEach((c, i) => { c.setAttribute("x", (sx - 10 + Math.sin(i * 2.3) * (14 + i * 3)).toFixed(0));
+      c.setAttribute("y", (GROUND_Y + 8 + i * 8).toFixed(0)); });
+    glit.setAttribute("opacity", (sunUp * clamp(elev / 25) * .8).toFixed(3));
+  }
+
+  // compass: facade wedges (gold, brighter in sun) and the sun's direction (dot moves inward as it climbs)
+  document.querySelectorAll(".wedge").forEach((w) => {
+    const i = +w.dataset.i, f = facings[i];
+    const fi = at(H.facade[f] || H.facade.S, hour) * shade;
+    w.setAttribute("transform", `rotate(${tw.facing[i].toFixed(1)})`);
+    w.setAttribute("opacity", (.28 + .6 * clamp(fi / 600)).toFixed(3));
+    w.setAttribute("fill", mix("#ffd36e", "#ff5a3d", clamp(fi / 650)));
+  });
+  const rr = 44 * clamp(1 - Math.max(elev, 0) / 90), ar = (az - 90) * Math.PI / 180;
+  const dot = $("sunDot");
+  dot.setAttribute("cx", (Math.cos(ar) * rr).toFixed(1)); dot.setAttribute("cy", (Math.sin(ar) * rr).toFixed(1));
+  dot.setAttribute("opacity", sunUp.toFixed(2));
+
+  // readouts (text changes ~10x a second at most)
+  if (!frame.t || now - frame.t > 100) {
+    frame.t = now;
+    const hh = Math.floor(hour), mm = Math.floor((hour - hh) * 60 / 15) * 15;
+    const sky = elev <= 0 ? "night" : elev < 10 ? (hour < 12 ? "sunrise" : "sunset") : cloud > 45 ? "cloudy"
+      : heat > .6 && elev > 25 ? "blazing sun" : "sunny";
+    $("clock").textContent = `${String(hh).padStart(2, "0")}:${String(mm).padStart(2, "0")} · ${sky}`;
+    $("tempNow").textContent = Math.round(temp);
+    const sp = u.setpoint || 24;
+    const gap = Math.round(temp - sp);
+    $("metaNow").textContent = `humidity ${Math.round(rh)}% · ` + (gap > 1 ? `AC fights +${gap}° to hold ${sp}°` : `AC barely needed at ${sp}°`);
+    $("sunLabel").textContent = `Sun on your ${facings.join("+")} windows`;
+    $("sunFill").style.width = `${(clamp(irr / 700) * 100).toFixed(1)}%`;
+    $("sunValue").textContent = `${Math.round(irr)} W/m²`;
+  }
+}
+
+buildSky();
+send("streamlit:componentReady", { apiVersion: 1 });
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>

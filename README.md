@@ -10,10 +10,11 @@
 **Demo video:** *[placeholder]* ·
 **Try it locally in 2 minutes:** [How to run](#how-to-run)
 
-![Check a Unit: CoolScore C, AED 547–787 a month in summer, true monthly cost and the drivers in AED](docs/screenshots/check_a_unit.png)
+![Check a Unit: the live Dubai climate scene at 15:15 on a typical August day, 40 °C, the sun on the flat's west windows, CoolScore C and AED 547–787 a month](docs/screenshots/check_a_unit.png)
 
-*A fictional listing pasted into Check a Unit (no API key needed). Every figure is a simulated estimate with a
-P10–P90 range.*
+*Check a Unit, live: a fictional listing read with no API key. The scene plays a typical August day of **measured**
+Dubai weather. At 15:15 it is 40 °C and the sun is on this flat's west-facing windows (540 W/m²). Every figure is a
+simulated estimate with a P10–P90 range, and it updates as you change any input.*
 
 ## In 60 seconds
 
@@ -126,11 +127,24 @@ lower AC setpoint, less shading and a top floor all raise the load. A finding I 
 
 ## The app
 
-Seven pages, phone-friendly, every figure with a "How is this calculated?" expander:
+Seven pages in a Dubai "liquid glass" design (frosted panels over a dusk backdrop), phone-friendly, with every figure
+behind a "How is this calculated?" expander.
+
+**The live climate scene** (`app/components/climate_stage/`) is the centrepiece. It's a custom Streamlit component in
+plain SVG and JavaScript, with no animation library and no network calls. It plays a typical day of measured weather for
+the chosen month (`data/demo/climate_monthly.json`, from the 2023–25 hourly data):
+- The sun follows Dubai's real sun path.
+- The sky warms with the real temperature, haze follows humidity and dust, and clouds follow cloud cover.
+- The unit's windows glow, and a beam reaches them, when the facade data says the sun is really on that side.
+- The scene matches the community: sea for coastal areas, a canal for central ones, dunes inland.
+- Floor, glass, balcony and neighbouring towers redraw as you change them.
+
+Because the component persists across reruns, changes glide instead of reloading. It respects
+`prefers-reduced-motion`.
 
 | Page | What it answers |
 |---|---|
-| **Check a Unit** | Paste a listing or fill a form → CoolScore, monthly and annual ranges, true monthly cost, drivers in AED, what-if (floor, facing, AC temperature, chiller-free), plain-language explanation and questions to ask the agent |
+| **Check a Unit** | Paste a listing or fill a form; everything updates live (no submit). CoolScore, the selected month's and the annual range, true monthly cost, the live climate scene, drivers in AED, a heat-coloured monthly chart, what-if (floor, facing, AC temperature, chiller-free), plain-language explanation and questions to ask the agent |
 | **Compare Units** | 2–4 units side by side; flags when the cheaper rent is the more expensive home |
 | **Investor View** | Net yield after cooling and service charges; the rent premium a chiller-free offer must earn |
 | **Developer View** | Facade heatmap of a fictional tower (floors × directions) and AED impact of glass ratio, glazing and balcony depth, per unit and for the whole tower (runs the physics engine directly) |
@@ -138,6 +152,10 @@ Seven pages, phone-friendly, every figure with a "How is this calculated?" expan
 | **Business Case** | Interactive pricing, unit economics and 12-month P&L |
 | **Methodology** | Physics, data, accuracy, real-bill status, the full assumptions register, limitations |
 
+<p>
+  <img src="docs/screenshots/home.png" alt="Home: a year of Dubai weather playing on a sample west-facing flat, with three measured facts" width="64%">
+  <img src="docs/screenshots/mobile.png" alt="Phone: the live scene and a floating glass bar with the score and this month's range" width="25%">
+</p>
 <p>
   <img src="docs/screenshots/developer_view.png" alt="Developer View: facade heatmap of the fictional Meridian Heights tower coloured A to E by floor and direction" width="49%">
   <img src="docs/screenshots/listing_badge.png" alt="Listing Badge: a generic listing card with a CoolScore E badge and the estimated summer cooling range" width="40%">
@@ -224,12 +242,13 @@ On Windows use `.venv\Scripts\python.exe` instead of `.venv/bin/python`. Then:
 | `python tasks.py launch` | Start the app and open it in the browser (what the `.cmd` runs) | ~3 s |
 | `python tasks.py app` | Streamlit app at http://localhost:8501 (uses the committed model) | instant |
 | `python tasks.py api` | FastAPI at http://127.0.0.1:8000/docs | instant |
-| `python tasks.py test` | 167 pytest tests | ~2 min |
+| `python tasks.py test` | 169 pytest tests | ~2 min |
 | `python tasks.py data` | Re-fetch and correct weather, facade sun (network) | ~30 s |
 | `python tasks.py simulate` | 40,000 scenarios through physics + billing | ~4 min |
 | `python tasks.py train` | Surrogate, quantiles, conformal calibration, A–E bands | ~2 min |
 | `python tasks.py validate` | Real-bill validation report | seconds |
 | `python tasks.py assumptions` | Regenerate [docs/assumptions.md](docs/assumptions.md) from the YAML | instant |
+| `python tasks.py climate` | Rebuild the typical-month climate file the live scene plays (after `data`) | ~4 s |
 
 The full pipeline (`data → simulate → train`) takes about 7 minutes on a laptop. The app never calls an external
 API at runtime except the optional Claude parser.
@@ -248,7 +267,7 @@ use, which suits a portfolio demo; a commercial launch needs its paid plan.
 config/      assumptions.yaml (every real-world number + source) · archetypes · communities · settings
 data/        raw/ weather cache · demo/ model artifact · real_bills/ template · simulated/ (regenerable)
 src/coolscore/  weather · physics · billing · simulate · model · validation · assistant
-app/         Streamlit Home.py + 7 pages      api/   FastAPI      tests/   167 tests
+app/         Streamlit Home.py + 7 pages      api/   FastAPI      tests/   169 tests
 docs/        prd · competitive_landscape · user-research/ · business_model · gtm_and_pilot · pitch_deck
              interview_prep · model_card · methodology · assumptions · evidence/ · validation_report
 ```

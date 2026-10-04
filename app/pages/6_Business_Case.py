@@ -7,9 +7,9 @@ import streamlit as st
 from coolscore import business
 
 ui.setup("Business Case")
-st.title("Business case")
-st.caption("Every default is a labelled **assumption** (our proposed prices and plan) from `config/assumptions.yaml`, "
-           "not market data. Change prices, plan and costs in the sidebar (tap **›** at the top left on a phone).")
+ui.hero("Business case", "Every default is a labelled <b>assumption</b> (our proposed prices and plan) from "
+        "<code>config/assumptions.yaml</code>, not market data. Change prices, plan and costs in the sidebar (tap "
+        "<b>›</b> at the top left on a phone).", eyebrow="Pricing · unit economics · P&L", simulated=False)
 
 b = business.BusinessInputs.defaults()
 with st.sidebar:

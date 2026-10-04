@@ -13,6 +13,26 @@
 | 8 | Business layer + real-bill validation | ✅ Done 2026-10-03 |
 | 9 | Ship | ✅ Done 2026-10-03 |
 
+## Redesign (2026-10-04): Dubai liquid-glass UI + live climate scene
+
+**Done**
+- Design system in `app/ui.py`: Dubai dusk backdrop (desert-gold glow, Gulf turquoise, slow "liquid" light, a
+  fictional skyline), frosted liquid-glass panels with a subtle eight-point-star texture, gold gradient headings,
+  glowing pill buttons with a sheen, glass inputs, metrics and sidebar. Theme in `.streamlit/config.toml`.
+- Live climate scene (`app/components/climate_stage/`, custom component, plain SVG/JS, no new dependency, no network):
+  plays a typical day of **measured** weather for the chosen month (`tasks.py climate` →
+  `data/demo/climate_monthly.json`, 33 KB). The real sun path, temperature, humidity haze, cloud and
+  facade sun drive the sky, sun, beam and window glow. Sea, canal or dunes follow the community's zone. It tweens
+  between states and respects reduced motion.
+- `streamlit-lottie` was not used: it isn't on the approved dependency list, it would fetch third-party animation
+  files at runtime, and stock animations can't show this unit's real conditions.
+- Check a Unit is live: there's no submit button and every change re-estimates (about 0.5 s). There's a month picker,
+  a heat-coloured monthly chart with P10–P90 whiskers, animated driver bars, and a floating live bar on phones and
+  tablets. Home has a self-playing year on a sample flat and three measured facts.
+- QA: every page captured at 1440 px and 390 px through a Chrome DevTools driver; no exceptions.
+
+**Tests:** 169 passing (live-flow, scene-arguments and climate-data tests added).
+
 ## Phase 9 (2026-10-03): ship
 
 **Done**

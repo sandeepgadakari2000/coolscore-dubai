@@ -29,6 +29,7 @@ TASKS: dict[str, list[str]] = {
     "train": [PY, "-m", "coolscore.model.train"],
     "validate": [PY, "-m", "coolscore.validation.report"],
     "assumptions": [PY, "-m", "coolscore.assumptions_doc"],
+    "climate": [PY, "-m", "coolscore.weather.climate"],
     "app": [PY, "-m", "streamlit", "run", "app/Home.py"],
     "api": [PY, "-m", "uvicorn", "api.main:app", "--port", "8000"],
 }

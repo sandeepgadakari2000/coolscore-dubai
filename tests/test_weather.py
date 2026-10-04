@@ -181,3 +181,20 @@ def test_require_refuses_placeholders() -> None:
     assert config.require("physics.ground_albedo")["central"] == pytest.approx(0.2)
     with pytest.raises(config.MissingAssumptionError):
         config.require("regulation_milestones.permit_to_completion_lag", "archetypes.yaml")
+
+
+def test_climate_summary_is_committed_and_physical() -> None:
+    """data/demo/climate_monthly.json drives the app's weather scene; it must exist and make physical sense."""
+    from coolscore.weather import climate
+
+    data = climate.load()
+    for site in ("central", "inland"):
+        months = data["sites"][site]
+        assert [m["month"] for m in months] == climate.MONTHS
+        for m in months:
+            assert m["tmin"] < m["tmax"] and 0 <= m["rh"] <= 100 and 0 <= m["cloud"] <= 100
+            assert all(len(v) == 24 for v in m["hourly"]["facade"].values()) and len(m["hourly"]["temp"]) == 24
+        assert max(m["tmax"] for m in months[5:9]) > 40 > max(m["tmax"] for m in months[:2])
+        jul = months[6]["facade_kwh_day"]
+        assert jul["W"] > jul["N"] and jul["E"] > jul["N"]      # summer: east/west beat north
+    assert climate.site_months("Dubai Marina") == data["sites"]["central"]   # coastal uses central weather (D8)

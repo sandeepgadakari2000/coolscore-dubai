@@ -40,7 +40,8 @@ src/coolscore/
   validation/ PII guard, real-bill accuracy report, residual calibration
   assistant/  Claude listing parser, direction helper, explanations; no-key fallback
 api/               FastAPI: POST /score, POST /compare, GET /health
-app/               Streamlit Home.py + pages/
+app/               Streamlit Home.py + pages/; ui.py = Dubai liquid-glass theme; components/climate_stage =
+                   live SVG/JS weather scene (custom component, no build) fed by data/demo/climate_monthly.json
 docs/              plan, competitive landscape, user research, business docs
 tests/             pytest
 ```
@@ -68,7 +69,7 @@ C:\Users\sande\.venvs\coolscore\Scripts\python.exe tasks.py test      # pytest -
 ... tasks.py data             # fetch + correct weather, facade sun (network, ~30 s)
 ... tasks.py report-weather   # docs/evidence/weather.md + weather.html
 ... tasks.py report-physics   # docs/evidence/physics.md (orientation, archetypes, stock spread)
-... tasks.py simulate (~4 min) | train (~2 min) | validate | assumptions (docs/assumptions.md)
+... tasks.py simulate (~4 min) | train (~2 min) | validate | assumptions | climate (scene data)
 ... tasks.py launch (app + opens browser; "Start CoolScore.cmd" runs it) | app (Streamlit, :8501) | api (:8000/docs)
 ```
 Pipeline budget: full `data → simulate → train` ≤ 15 min on a laptop; app answers < 3 s.
