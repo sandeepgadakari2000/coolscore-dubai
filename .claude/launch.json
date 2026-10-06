@@ -27,6 +27,15 @@
         "8000"
       ],
       "port": 8000
+    },
+    {
+      "name": "site",
+      "runtimeExecutable": "C:/Users/sande/.venvs/coolscore/Scripts/python.exe",
+      "runtimeArgs": [
+        "C:/Users/sande/OneDrive/Desktop/coolscore/tasks.py",
+        "site"
+      ],
+      "port": 5230
     }
   ]
 }

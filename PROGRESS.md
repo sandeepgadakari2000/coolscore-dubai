@@ -13,6 +13,49 @@
 | 8 | Business layer + real-bill validation | ✅ Done 2026-10-03 |
 | 9 | Ship | ✅ Done 2026-10-03 |
 
+## Landing page (2026-10-06): one tower, one August day
+
+**Done**
+- `site/` (static: vanilla JS, three.js 0.170 from jsDelivr for the 3D view only, no build). Built from five
+  AI-generated clips Sandeep made from our prompts.
+- **Hero film:** the five shots joined into one continuous 46 s film at 1920×1280 (the opening from Sandeep's HD
+  2304×1536 render, the other shots upscaled): `film-1920.mp4` 37 MB for big or dense screens, `film.mp4` 1280 px
+  20 MB for laptops and phones, `film-sm.mp4` 9 MB on data-saver/slow networks. 1 s dissolves, a dip to black into
+  night; it autoplays muted and loops as ordinary video.
+  The noon shot carries a baked-in, **illustrative** heat view (labelled on screen as not a thermal image).
+  Overlays follow the film's own clock: chapter titles, a viewfinder + data card locked onto each featured flat
+  (tracked per frame with optical flow, `data/tracks.json`), a film bar to jump between dawn/noon/sunset/night/
+  tower, and live readings (Dubai time, outside temperature, the flat's simulated AC load). On phones the crop
+  follows the flat. The film pauses when scrolled out of view.
+  (A first version scrubbed the clips with scroll; Sandeep found it flickery and image-like, so it was replaced.)
+- **The day, flat by flat** (`js/scenes.js`, GSAP 3.15 + ScrollTrigger + SplitText and Lenis smooth scroll from
+  jsDelivr): four pinned scenes, one per flat, each with its own accent glow and a giant outlined time behind it.
+  The loop opens out of a card (clip-path reveal), pushes in as you scroll, tilts with the pointer under a moving
+  glare, and gold brackets lock onto the flat inside it (same optical-flow tracks as the hero). The title rises
+  word by word, the panel pops in: grade badge with a ring burst, P10–P90 counting up, an emphasis ring of the
+  August heat budget (the scene's share in the accent, the rest grey, all labelled), the flat's average August
+  day of AC load drawn as an area chart with the scene's hour marked and a hover readout, and four readings that
+  spring in. A dot rail tracks the day; scenes hand over with a short blur. Phones stack the scenes; reduced
+  motion shows everything without animation; without the CDN libraries the content simply shows.
+- **Explore** (`js/tower3d.js`): a real-time night render matched to the film's tower — cream balcony slabs with
+  glass balustrades, blue glass with mullions, gold-lit crown, a palm island with quay lights in a marina with
+  mirrored water (three.js Water) and a lit skyline, bloom and ACES. Each flat's room light and balcony LED carry
+  its CoolScore grade (a "Grade lights" toggle shows the tower as it is). Motion: a sweeping arrival with a scan
+  that lights the grades floor by floor, eased camera moves to the chosen floor/facing, a gold halo that glides to
+  the floor, drag with inertia, hover tooltips. Built when scrolled near, drawn only while visible; ~60 fps on the
+  Intel UHD 630 (adaptive quality tiers). The old daytime 3D film (`world.js`) was removed.
+- **Findings + CTA** to the live app. Featured flats: sunrise floor 17 E, 1 pm floor 24 S (under the roof),
+  5 pm floor 14 W, 10 pm floor 3 N.
+- Every number comes from `site/data/tower.json` (`tasks.py landing`, ~1 min). Story: grades C–E in one tower
+  (P50 AED 6,792–7,680/yr, a gap of AED 888); sun through the glass is 4–10% of August cooling, outside air and
+  humidity 50–62%; the top floor is the only E. The tower is a 2005–2014 build (as 2022+ every flat is A–B).
+- `tasks.py site` serves it on :5230 (no caching, HTTP Range). QA in headless Chrome on the real GPU: film plays
+  at 24 fps with <1% dropped frames on desktop, ~2% on a phone viewport; no console errors.
+- Not deployed yet. Static hosting works anywhere (largest file 23.6 MB, under Cloudflare's 25 MB limit).
+
+**Tests:** `tests/test_landing.py` (192 unique flats, film stops match the export, budgets add up, exported numbers
+equal the model's).
+
 ## Heat X-ray (2026-10-04): the result as a picture
 
 **Done**

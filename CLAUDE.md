@@ -43,6 +43,7 @@ api/               FastAPI: POST /score, POST /compare, GET /health
 app/               Streamlit Home.py + pages/; ui.py = Dubai liquid-glass theme; components/climate_stage =
                    live SVG/JS weather scene (custom component, no build) fed by data/demo/climate_monthly.json
 docs/              plan, competitive landscape, user research, business docs
+site/              static landing page (scroll film, three.js via CDN, no build); data/tower.json from tasks.py landing
 tests/             pytest
 ```
 Key design rules:
@@ -71,6 +72,7 @@ C:\Users\sande\.venvs\coolscore\Scripts\python.exe tasks.py test      # pytest -
 ... tasks.py report-physics   # docs/evidence/physics.md (orientation, archetypes, stock spread)
 ... tasks.py simulate (~4 min) | train (~2 min) | validate | assumptions | climate (scene data)
 ... tasks.py launch (app + opens browser; "Start CoolScore.cmd" runs it) | app (Streamlit, :8501) | api (:8000/docs)
+... tasks.py landing (site/data/tower.json, ~1 min) | site (serve site/ on :5230, no caching)
 ```
 Pipeline budget: full `data → simulate → train` ≤ 15 min on a laptop; app answers < 3 s.
 Live app: Streamlit Community Cloud from GitHub `main` (link in README). A push reloads `app/` scripts but not

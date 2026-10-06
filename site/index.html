@@ -1,0 +1,294 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CoolScore Dubai</title>
+  <meta name="description" content="One tower, one August day in Dubai. Watch four flats live through the same day and see why the same building can cost very different amounts to cool. CoolScore predicts a unit's cooling bill before you sign.">
+  <meta name="theme-color" content="#060914">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23060914'/%3E%3Ccircle cx='16' cy='19' r='7' fill='none' stroke='%23f5b942' stroke-width='2'/%3E%3Cpath d='M5 19h22' stroke='%23f5b942' stroke-width='2'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="preload" as="image" href="media/film.jpg">
+  <link rel="stylesheet" href="css/site.css">
+  <script type="importmap">
+  { "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+  } }
+  </script>
+</head>
+<body>
+
+<!-- Top bar -->
+<header class="top">
+  <a class="brand" href="#hero" aria-label="CoolScore, back to the film">
+    <svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="19" r="7"/><path d="M4 19h24"/><path d="M16 5v4M7.5 9.5l2.4 2.4M24.5 9.5l-2.4 2.4"/></svg>
+    <span>CoolScore<em>Dubai</em></span>
+  </a>
+  <nav class="links" aria-label="Sections">
+    <a href="#day">The day</a>
+    <a href="#explore">192 flats</a>
+    <a href="#cta">How it works</a>
+  </nav>
+  <a class="pill pill-gold top-cta" data-app="check" href="#">Check a unit <i>→</i></a>
+</header>
+
+<main>
+  <!-- 1 · The film: one continuous take of the tower from dawn to night, playing as video -->
+  <section id="hero" class="hero" aria-label="Film: one August day at Meridian Heights">
+    <video id="film" muted loop playsinline autoplay preload="auto" poster="media/film.jpg"
+      aria-label="Film of a Dubai tower through one August day: dawn, the roof at noon, a west-facing flat at sunset, a flat at night"></video>
+    <div class="hero-scrim" aria-hidden="true"></div>
+
+    <div class="hero-copy" aria-live="polite">
+      <article class="beat" data-beat="0">
+        <p class="eyebrow">CoolScore · Dubai cooling costs, before you sign</p>
+        <h1 class="display">Every floor<br>lives a different day</h1>
+        <p class="lede">CoolScore predicts what a Dubai flat will cost to cool — <b>before you rent or buy it</b>.</p>
+      </article>
+      <article class="beat" data-beat="1">
+        <p class="eyebrow"><b>I</b> 06:00 · Floor 17 · East</p>
+        <h2 class="display">The east<br>wakes first</h2>
+        <p class="lede">Low sun pours through the glass. Yet it's only <b data-v="sunrise.sun_glass"></b> of this flat's August cooling.</p>
+      </article>
+      <article class="beat" data-beat="2">
+        <p class="eyebrow"><b>II</b> 13:00 · Floor 24 · Under the roof</p>
+        <h2 class="display">Noon lands<br>on the roof</h2>
+        <p class="lede"><span data-v="afternoon.temp"></span>, sun <span data-v="afternoon.elev"></span> up. Only the top floor lives under it — the tower's one grade <b data-v="afternoon.grade"></b>.</p>
+      </article>
+      <article class="beat" data-beat="3">
+        <p class="eyebrow"><b>III</b> 17:00 · Floor 14 · West</p>
+        <h2 class="display">The west takes<br>the late sun</h2>
+        <p class="lede"><span data-v="evening.wm2"></span> on the west glass. This flat's AC works hardest at <span data-v="evening.peak"></span>.</p>
+      </article>
+      <article class="beat" data-beat="4">
+        <p class="eyebrow"><b>IV</b> 22:00 · Floor 03 · North</p>
+        <h2 class="display">No sun.<br>Still <span data-v="night.temp_big"></span></h2>
+        <p class="lede"><b data-v="night.air"></b> of this flat's August cooling is hot, humid outside air. The AC never stops.</p>
+      </article>
+      <article class="beat" data-beat="5">
+        <p class="eyebrow">Meridian Heights · 192 flats</p>
+        <h2 class="display">One tower.<br>192 different bills</h2>
+        <p class="lede">Same size, same building: grades <b data-v="spread.grades"></b>. Scroll to see how each flat spends its day.</p>
+      </article>
+    </div>
+
+    <!-- the flat the film is about, locked on as the camera moves -->
+    <div class="lock-layer" aria-hidden="true">
+      <svg class="lock-svg"><path class="brackets" /><line /><circle r="4" /></svg>
+      <div class="lock-tag"></div>
+      <div class="flat-card">
+        <div class="fc-top"><span class="fc-floor"></span><span class="grade fc-grade"></span></div>
+        <div class="fc-aed"></div>
+        <div class="fc-note">P10–P90 a year · simulated</div>
+      </div>
+    </div>
+    <div class="heat-badge" aria-hidden="true"><i></i>Heat view · illustration, not a thermal image</div>
+
+    <!-- film bar: play/pause, the day as a timeline you can jump along, live readings -->
+    <div class="filmbar">
+      <button class="fb-play" aria-label="Pause film"><svg viewBox="0 0 24 24" aria-hidden="true"><path class="ico-pause" d="M7 5h3v14H7zM14 5h3v14h-3z"/><path class="ico-play" d="M8 5l11 7-11 7z"/></svg></button>
+      <div class="fb-track" role="group" aria-label="Jump to a time of day">
+        <div class="fb-fill"></div>
+        <button data-t="0.2"><span>Dawn</span></button>
+        <button data-t="9.6"><span>Noon</span></button>
+        <button data-t="18.6"><span>Sunset</span></button>
+        <button data-t="27.8"><span>Night</span></button>
+        <button data-t="36.6"><span>Tower</span></button>
+      </div>
+      <div class="fb-read">
+        <span><i>Dubai</i><b id="fb-clock">05:30</b></span>
+        <span><i>Outside</i><b id="fb-temp">—</b></span>
+        <span><i id="fb-ac-label">AC</i><b id="fb-ac">—</b></span>
+      </div>
+    </div>
+    <a class="hero-down" href="#day" aria-label="Scroll to the day, flat by flat"><span></span></a>
+  </section>
+
+  <!-- 2 · The same day, flat by flat -->
+  <section id="day" class="day">
+    <header class="sec-head">
+      <p class="eyebrow">One August day · Meridian Heights · Business Bay</p>
+      <h2 class="display sm">Four flats.<br>Same size. Four bills.</h2>
+      <p class="lede">Every flat here is a 1-bedroom of 850&nbsp;sq&nbsp;ft in the same 2005–2014 tower. CoolScore runs
+        each one hour by hour through a measured Dubai August — and the floor and the facing change everything.</p>
+    </header>
+
+    <nav class="day-rail" aria-label="The day, flat by flat">
+      <i class="dr-line"><i class="dr-fill"></i></i>
+      <a href="#" data-to="0"><b>06:00</b><span>Sunrise</span></a>
+      <a href="#" data-to="1"><b>13:00</b><span>Noon</span></a>
+      <a href="#" data-to="2"><b>17:00</b><span>Evening</span></a>
+      <a href="#" data-to="3"><b>22:00</b><span>Night</span></a>
+    </nav>
+    <section class="scene" data-flat="0" data-clip="dawn" style="--accent:#ffb86b;--glow:#ff6f91">
+      <div class="scene-pin">
+        <div class="scene-bg" aria-hidden="true"><i class="blob b1"></i><i class="blob b2"></i><span class="ghost">06:00</span></div>
+        <div class="scene-grid">
+          <figure class="media">
+            <div class="frame">
+              <video muted loop playsinline preload="none" poster="media/dawn.jpg" data-src="media/dawn-loop.mp4"></video>
+              <svg class="vf" aria-hidden="true"><path /></svg>
+              <span class="ftag" aria-hidden="true"></span>
+              <span class="chip"><i class="ico ico-sun" aria-hidden="true"></i>06:00 · Sunrise</span>
+              <i class="glare" aria-hidden="true"></i>
+            </div>
+            <figcaption>That light is what you notice at a viewing. It's only <b data-v="sunrise.sun_glass"></b> of this flat's August cooling.</figcaption>
+          </figure>
+          <div class="copy">
+            <p class="eyebrow"><b>I</b> Sunrise · Floor 17 · East</p>
+            <h3 class="display xs st">The east wakes first</h3>
+            <p class="lede sl">The sun clears the horizon and comes in low, straight through the east glass and deep into the living room. It's <span data-v="sunrise.temp"></span> outside before breakfast.</p>
+            <div class="panel"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <section class="scene" data-flat="1" data-clip="noon" style="--accent:#ff6a3d;--glow:#ffcf4a">
+      <div class="scene-pin">
+        <div class="scene-bg" aria-hidden="true"><i class="blob b1"></i><i class="blob b2"></i><span class="ghost">13:00</span></div>
+        <div class="scene-grid">
+          <figure class="media">
+            <div class="frame">
+              <video muted loop playsinline preload="none" poster="media/noon.jpg" data-src="media/noon-loop.mp4"></video>
+              <svg class="vf" aria-hidden="true"><path /></svg>
+              <span class="ftag" aria-hidden="true"></span>
+              <span class="chip"><i class="ico ico-heat" aria-hidden="true"></i>13:00 · Afternoon</span>
+              <i class="glare" aria-hidden="true"></i>
+            </div>
+            <figcaption>August averages <span data-v="hot_days"></span> days over 40&nbsp;°C. Same size, same tower: this is the one flat graded <b data-v="afternoon.grade"></b>. The heat view is an illustration.</figcaption>
+          </figure>
+          <div class="copy">
+            <p class="eyebrow"><b>II</b> Afternoon · Floor 24 · Under the roof</p>
+            <h3 class="display xs st">Noon lands on the roof</h3>
+            <p class="lede sl">At 1 pm the sun is <span data-v="afternoon.elev"></span> up, nearly overhead. Walls catch little of it; the roof takes it all, and only the top floor lives under it. <span data-v="afternoon.temp"></span> outside.</p>
+            <div class="panel"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <section class="scene" data-flat="2" data-clip="evening" style="--accent:#ffa53a;--glow:#ff5d7a">
+      <div class="scene-pin">
+        <div class="scene-bg" aria-hidden="true"><i class="blob b1"></i><i class="blob b2"></i><span class="ghost">17:00</span></div>
+        <div class="scene-grid">
+          <figure class="media">
+            <div class="frame">
+              <video muted loop playsinline preload="none" poster="media/evening.jpg" data-src="media/evening-loop.mp4"></video>
+              <svg class="vf" aria-hidden="true"><path /></svg>
+              <span class="ftag" aria-hidden="true"></span>
+              <span class="chip"><i class="ico ico-sunset" aria-hidden="true"></i>17:00 · Evening</span>
+              <i class="glare" aria-hidden="true"></i>
+            </div>
+            <figcaption>Over a year, west costs about what east does. It just peaks harder — and you size the AC, and feel the room, at the peak.</figcaption>
+          </figure>
+          <div class="copy">
+            <p class="eyebrow"><b>III</b> Evening · Floor 14 · West</p>
+            <h3 class="display xs st">The west takes the late sun</h3>
+            <p class="lede sl">The sun swings west and drops, pouring <span data-v="evening.wm2"></span> onto the west glass in the hottest hours of the day. This flat's AC works hardest at <span data-v="evening.peak"></span>.</p>
+            <div class="panel"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <section class="scene" data-flat="3" data-clip="night" style="--accent:#5cc8ff;--glow:#6a5cff">
+      <div class="scene-pin">
+        <div class="scene-bg" aria-hidden="true"><i class="blob b1"></i><i class="blob b2"></i><span class="ghost">22:00</span></div>
+        <div class="scene-grid">
+          <figure class="media">
+            <div class="frame">
+              <video muted loop playsinline preload="none" poster="media/night.jpg" data-src="media/night-loop.mp4"></video>
+              <svg class="vf" aria-hidden="true"><path /></svg>
+              <span class="ftag" aria-hidden="true"></span>
+              <span class="chip"><i class="ico ico-moon" aria-hidden="true"></i>22:00 · Night</span>
+              <i class="glare" aria-hidden="true"></i>
+            </div>
+            <figcaption>Outside air and humidity: <b data-v="night.air"></b> of this flat's August cooling. The cheapest flat in the tower still costs <b data-v="night.p50"></b> a year to cool.</figcaption>
+          </figure>
+          <div class="copy">
+            <p class="eyebrow"><b>IV</b> Night · Floor 03 · North</p>
+            <h3 class="display xs st">No sun. Still <span data-v="night.temp_big"></span></h3>
+            <p class="lede sl">Floor 3, north side, barely saw the sun all day. At 10 pm its AC is still moving <span data-v="night.kw"></span>: the walls give back the day's heat and the air is <span data-v="night.rh"></span> humid.</p>
+            <div class="panel"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </section>
+
+  <!-- 3 · The whole tower, graded -->
+  <section id="explore" aria-label="Explore every flat">
+    <div class="ex-stage">
+      <canvas id="world" aria-label="A 3D model of the tower at night, each flat's light coloured by its CoolScore grade" role="img"></canvas>
+      <div class="ex-tip" aria-hidden="true"></div>
+      <p class="ex-hint">Drag to turn · tap a window</p>
+    </div>
+    <div class="ex-panel glass">
+      <p class="eyebrow">Explore the tower</p>
+      <h2 class="display sm">Same tower.<br>Grades <span data-v="spread.grades"></span></h2>
+      <p class="lede">All 192 flats at Meridian Heights: 1 bedroom, 850&nbsp;sq&nbsp;ft, built 2005–2014.
+        Only the floor and the facing change. Median estimates run from <b data-v="spread.lo"></b> to
+        <b data-v="spread.hi"></b> a year.</p>
+      <div class="ex-floor">
+        <button class="ex-step" data-step="-1" aria-label="Floor down">−</button>
+        <div class="ex-level"><span>Level</span><b id="ex-level">14</b></div>
+        <button class="ex-step" data-step="1" aria-label="Floor up">+</button>
+        <input id="ex-range" type="range" min="1" max="24" value="14" aria-label="Floor">
+      </div>
+      <div class="ex-body">
+        <figure class="ex-plan">
+          <svg id="plan" viewBox="0 0 300 300" role="group" aria-label="Floor plan: eight flats, one facing each direction"></svg>
+          <figcaption>Typical floor · 8 flats, one facing each way · tap a flat</figcaption>
+        </figure>
+        <div class="ex-card" id="ex-card"></div>
+      </div>
+      <div class="ex-foot">
+        <button class="ex-toggle" aria-pressed="true"><i></i>Grade lights</button>
+        <div class="ex-keys"><span style="--c:#33e08a">A</span><span style="--c:#9be35a">B</span><span style="--c:#ffc94d">C</span><span style="--c:#ff8a3d">D</span><span style="--c:#ff4a4a">E</span></div>
+      </div>
+      <p class="fine">Each flat's light shows its CoolScore grade, A (lowest cooling cost per sq ft) to E (highest). Turn the grade lights off to see the tower as it is.</p>
+    </div>
+  </section>
+
+  <!-- 4 · What the day showed, and the way in -->
+  <section id="cta">
+    <div class="findings" aria-label="What the day showed">
+      <div><b data-count="spread.gap"></b><span>a year between the cheapest and the dearest flat in one tower (median)</span></div>
+      <div><b data-count="night.air_pct"></b><span>of August cooling in our four flats is hot, humid outside air — not sunlight</span></div>
+      <div><b data-count="evening.sun_pct"></b><span>is sun through the glass — the light you notice at a viewing</span></div>
+      <div><b data-count="grades"></b><span>CoolScore grades in one building: same size, only the floor and the facing differ</span></div>
+    </div>
+    <div class="cta-inner">
+      <p class="eyebrow">CoolScore Dubai</p>
+      <h2 class="display">Know the bill<br>before you sign</h2>
+      <p class="lede">Paste a listing or describe a flat. CoolScore grades it A–E and gives you a monthly and yearly
+        cooling-cost range, built from the building's physics and Dubai's weather — before you move in.</p>
+      <div class="cta-row">
+        <a class="pill pill-gold" data-app="check" href="#">Check a unit <i>→</i></a>
+        <a class="pill pill-ghost" data-app="example" href="#">See a worked example</a>
+      </div>
+      <div class="how">
+        <div><b>Measured weather</b><span>Hourly Dubai weather for 2023–25, corrected to airport observations.</span></div>
+        <div><b>Building physics</b><span>Each flat simulated hour by hour (ISO 13790): floor, facing, glass and age.</span></div>
+        <div><b>Honest ranges</b><span>Dubai cooling tariffs and a P10–P90 range from 40,000 simulated scenarios — never one exact number.</span></div>
+      </div>
+      <a class="method" data-app="method" href="#">How it works →</a>
+    </div>
+    <footer>
+      <p><b>Meridian Heights is a fictional tower</b> and the film is AI-generated footage of it. <span data-v="simulated"></span>
+        Figures are for a typical household in August unless stated. <span data-v="disclaimer"></span></p>
+      <p>Weather data by <a href="https://open-meteo.com/" rel="noopener">Open-Meteo.com</a> (CC BY 4.0), ECMWF IFS 9 km, corrected
+        to NOAA airport observations. Sun position and facade sun from the same typical August day.</p>
+    </footer>
+  </section>
+</main>
+
+<noscript><p class="noscript">The live numbers need JavaScript. <a href="https://coolscore-dubai-jvw959b8tqbsrazygcm7kk.streamlit.app/">Open CoolScore</a>.</p></noscript>
+<script defer src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/ScrollTrigger.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/SplitText.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/lenis@1.3.26/dist/lenis.min.js"></script>
+<script type="module" src="js/main.js"></script>
+</body>
+</html>

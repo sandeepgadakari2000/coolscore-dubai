@@ -2,6 +2,7 @@
 
 Usage: python tasks.py <task> [extra args passed through]
 Tasks: setup, data, report-weather, report-physics, simulate, train, validate, assumptions, test, app, api,
+       climate, landing (data for the landing page), site (serve the landing page on :5230),
        launch (start the app and open it in the browser; what "Start CoolScore.cmd" runs)
 """
 
@@ -30,6 +31,8 @@ TASKS: dict[str, list[str]] = {
     "validate": [PY, "-m", "coolscore.validation.report"],
     "assumptions": [PY, "-m", "coolscore.assumptions_doc"],
     "climate": [PY, "-m", "coolscore.weather.climate"],
+    "landing": [PY, "-m", "coolscore.landing"],
+    "site": [PY, "-m", "coolscore.landing", "serve"],
     "app": [PY, "-m", "streamlit", "run", "app/Home.py"],
     "api": [PY, "-m", "uvicorn", "api.main:app", "--port", "8000"],
 }
