@@ -89,7 +89,7 @@ details.how p { margin: 10px 0 0; font-size: 13px; line-height: 1.6; color: var(
 .res-head .small { font-size: 12px; color: var(--ink-3); letter-spacing: .06em; }
 .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(132px, 1fr)); gap: 10px; }
 .kpi { padding: 12px 14px; border-radius: 14px; background: rgba(255, 255, 255, .04); border: 1px solid rgba(255, 255, 255, .08); }
-.kpi b { display: block; font: 400 clamp(22px, 2vw, 28px)/1.05 var(--serif); font-variant-numeric: tabular-nums; }
+.kpi b { display: block; font: 400 clamp(20px, 1.6vw, 25px)/1.08 var(--serif); font-variant-numeric: tabular-nums; }
 .kpi span { display: block; margin-top: 5px; font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); }
 .kpi small { display: block; margin-top: 3px; font-size: 12px; color: var(--ink-3); }
 .kpi .up { color: #ff9d6b; } .kpi .down { color: #6fe0d2; }
