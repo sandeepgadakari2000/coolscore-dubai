@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Investor view · CoolScore Dubai</title>
+  <meta name="description" content="Net yield on a Dubai flat after cooling and service charges, and the rent premium a chiller-free offer has to earn. Simulated estimates.">
+  <meta name="theme-color" content="#060914">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23060914'/%3E%3Ccircle cx='16' cy='19' r='7' fill='none' stroke='%23f5b942' stroke-width='2'/%3E%3Cpath d='M5 19h22' stroke='%23f5b942' stroke-width='2'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/site.css"><link rel="stylesheet" href="/css/app.css">
+</head>
+<body>
+<main class="app-main">
+  <section class="page-hero">
+    <p class="eyebrow">Net yield</p>
+    <h1 class="display sm">Investor view</h1>
+    <p class="lede">Yield after the costs a listing doesn't show — cooling and service charges — and the rent premium a
+      chiller-free offer has to earn.</p>
+    <span class="sim-tag">Simulated estimates · ranges, not quotes</span>
+  </section>
+
+  <section class="grid g-main res-first">
+    <div class="stack">
+      <div class="card"><h2>The numbers</h2><p class="sub">Your figures; nothing here is assumed for you.</p>
+        <div class="fields" id="money">
+          <label class="field"><span>Purchase price (AED)</span><input name="price" type="number" min="100000" max="50000000" step="10000" value="1400000"></label>
+          <label class="field"><span>Annual rent (AED)</span><input name="rent" type="number" min="0" max="2000000" step="1000" value="95000"></label>
+          <label class="field"><span>Service charge (AED / sq ft / year)</span><input name="sc" type="number" min="0" max="100" step="0.5" value="0" title="Use the building's figure from its service-charge statement. We don't assume one."></label>
+          <label class="field"><span>Other yearly costs (AED)</span><input name="other" type="number" min="0" max="500000" step="500" value="0" title="Maintenance, management, insurance"></label>
+        </div>
+      </div>
+      <div class="card"><h2>The unit</h2><p class="sub">Cooling depends on these. Every change updates the yield.</p><div id="unit"></div></div>
+    </div>
+    <div class="stack">
+      <div class="card" id="yields" aria-live="polite"><p class="note">Calculating…</p></div>
+      <div class="card"><h2>From gross to net</h2><p class="sub">Yield points each cost takes away, in % of the purchase price.</p>
+        <div class="chart" id="fall"></div></div>
+      <div class="card" id="offer"></div>
+    </div>
+  </section>
+
+  <section class="card mt">
+    <details class="how" style="margin-top:0"><summary>How is this calculated?</summary><div id="how"></div></details>
+  </section>
+</main>
+<script type="module" src="/js/app/investor.js"></script>
+</body>
+</html>

@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Developer view · CoolScore Dubai</title>
+  <meta name="description" content="A fictional Dubai tower, every unit simulated hour by hour: move the design levers and watch the facade re-grade A–E. Simulated estimates.">
+  <meta name="theme-color" content="#060914">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23060914'/%3E%3Ccircle cx='16' cy='19' r='7' fill='none' stroke='%23f5b942' stroke-width='2'/%3E%3Cpath d='M5 19h22' stroke='%23f5b942' stroke-width='2'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/site.css"><link rel="stylesheet" href="/css/app.css">
+</head>
+<body>
+<main class="app-main">
+  <section class="page-hero">
+    <p class="eyebrow">Physics engine, live</p>
+    <h1 class="display sm">Developer view</h1>
+    <p class="lede"><b>Meridian Heights</b> — a fictional 1-bedroom tower. Every cell is one unit, simulated hour by hour
+      (typical household, reference district-cooling tariff). Move the design levers and watch the facade re-grade.</p>
+    <span class="sim-tag">Simulated, not measured</span>
+  </section>
+
+  <section class="grid g-main res-first">
+    <div class="stack">
+      <div class="card"><h2>Tower</h2><p class="sub">Where it stands and how it is built.</p>
+        <div class="fields" id="tower">
+          <label class="field wide"><span>Community</span><select name="community"></select></label>
+          <label class="field"><span>Envelope standard</span><select name="era_band"></select></label>
+          <label class="field"><span>Surroundings</span><select name="obstruction"></select></label>
+          <label class="field wide"><span>Floors · <b id="floors-out">24</b></span><input name="floors" type="range" min="6" max="40" step="1" value="24"></label>
+        </div>
+      </div>
+      <div class="card"><h2>Design levers</h2><p class="sub">Applied to every unit in the tower.</p>
+        <div class="fields" id="levers" style="grid-template-columns:1fr">
+          <label class="field" title="Window-to-wall ratio. Base design: 0.60."><span>Glass share of facade · <b id="wwr-out">60%</b></span><input name="wwr" type="range" min="0.2" max="0.9" step="0.05" value="0.6"></label>
+          <label class="field" title="Solar heat gain coefficient of the glass (lower = more solar control). Base design: 0.25."><span>Glazing SHGC · <b id="shgc-out">0.25</b></span><input name="shgc" type="range" min="0.15" max="0.6" step="0.01" value="0.25"></label>
+          <label class="field"><span>Balcony / fin depth · <b id="depth-out">0.00 m</b></span><input name="depth" type="range" min="0" max="3" step="0.25" value="0"></label>
+        </div>
+        <button class="link-btn mt" id="reset">Back to the base design</button>
+      </div>
+      <div class="card" id="impact" aria-live="polite"></div>
+    </div>
+    <div class="card" id="tower-card">
+      <div class="tw-head"><div><h2>The facade, graded</h2><p class="sub">One cell per unit: floor × the way its windows face. Hover or tap a cell.</p></div>
+        <div class="tw-key" id="key"></div></div>
+      <div class="tw" id="grid" role="grid" aria-label="CoolScore of every unit by floor and facing"></div>
+      <p class="note" id="cell-info" aria-live="polite">&nbsp;</p>
+    </div>
+  </section>
+
+  <section class="card mt">
+    <details class="how" style="margin-top:0"><summary>How is this calculated?</summary>
+      <p>For each floor and facing, the ISO 13790 hourly engine simulates a typical 850 sq ft 1-bedroom (2 people, out by
+        day, 24 °C) on 2024 weather, with neighbouring towers' shading falling with height and roof exposure on the top
+        floor. Cooling energy is billed with the published district-cooling tariff (capacity + consumption + fuel
+        surcharge + meter + fans + 5% VAT) and graded with the same A–E cut-offs as the rest of the app. Simulated, not measured.</p>
+      <p>Base design: 60% glass, SHGC 0.25, no balconies. Differences are simulated tenant cooling bills under the reference
+        district-cooling tariff (capacity charge allocated by area, so most of the saving is consumption).</p>
+    </details>
+  </section>
+</main>
+<script type="module" src="/js/app/developer.js"></script>
+</body>
+</html>

@@ -1,0 +1,10 @@
+# The Vercel function's dependencies only (the Streamlit app and the pipeline use ../requirements.txt).
+# No scikit-learn, SciPy or pvlib: the model runs from its NumPy copy (coolscore.model.lite) and facade sun
+# comes from the committed caches in data/raw/facade/.
+numpy==2.5.3
+pandas==3.0.6
+PyYAML==6.0.3
+fastapi==0.142.2
+pydantic==2.13.5
+requests==2.34.2
+anthropic==1.11.0

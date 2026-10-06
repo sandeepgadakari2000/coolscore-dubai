@@ -16,7 +16,6 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-import pvlib
 
 from coolscore import config
 
@@ -28,6 +27,8 @@ VERTICAL = 90.0
 
 def solar_position(index: pd.DatetimeIndex, lat: float, lon: float) -> pd.DataFrame:
     """Sun position at the middle of each preceding-hour interval, re-indexed to ``index``."""
+    import pvlib  # only needed to (re)compute facade sun; the committed caches don't need it
+
     mid = index - pd.Timedelta(minutes=30)
     sp = pvlib.solarposition.get_solarposition(mid, lat, lon)
     sp.index = index
@@ -40,6 +41,8 @@ def facade_irradiance(weather: pd.DataFrame, lat: float, lon: float) -> pd.DataF
     Returns columns ``sun_elev_deg``, ``sun_az_deg`` and ``<ORI>_beam``,
     ``<ORI>_sky`` for every orientation in :data:`ORIENTATIONS`.
     """
+    import pvlib
+
     sp = solar_position(weather.index, lat, lon)
     zenith = sp["apparent_zenith"]
     azimuth = sp["azimuth"]

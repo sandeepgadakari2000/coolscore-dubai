@@ -1,0 +1,333 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CoolScore heat X-ray</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap">
+<!--
+  Heat X-ray: a thermal-camera cutaway of the flat for one month, drawn from the physics engine's
+  heat budget (coolscore.physics.breakdown). Every particle stream, glow and bar is sized by the
+  simulated kWh of heat from that source; the AED split comes from the model's monthly estimate.
+  Streamlit component without a build step: the iframe persists across reruns, so values tween.
+-->
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: transparent; overflow: hidden; color: #f7f1e7;
+    font-family: Outfit, "Segoe UI Variable", "Segoe UI", system-ui, sans-serif; }
+  .wrap { position: relative; display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 14px;
+    padding: 14px; border-radius: 26px; overflow: hidden;
+    background: radial-gradient(120% 90% at 20% 10%, #1b1650 0%, #0b0e2a 55%, #070918 100%);
+    box-shadow: 0 18px 50px rgba(0,0,0,.45), inset 0 0 0 1px rgba(255,255,255,.12); }
+  .room { position: relative; min-height: 300px; }
+  .room svg, .room canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .tag { position: absolute; z-index: 3; font-size: .72rem; padding: .3rem .6rem; border-radius: 12px; line-height: 1.25;
+    background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.22); backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px); }
+  .tag b { font-size: .95rem; }
+  .tag.out { left: 8px; top: 8px; } .tag.in { right: 8px; bottom: 8px; text-align: right; }
+  .tag.cam { right: 8px; top: 8px; display: flex; align-items: center; gap: .4rem; }
+  .tag.cam i { display: block; width: 74px; height: 8px; border-radius: 9px;
+    background: linear-gradient(90deg, #1d2a8a, #6a1b9a, #d81b60, #ff7a1a, #ffd23f, #fffbe0); }
+  .side { display: flex; flex-direction: column; gap: .55rem; padding: .7rem .8rem; border-radius: 20px;
+    background: linear-gradient(135deg, rgba(255,255,255,.14), rgba(255,255,255,.05));
+    border: 1px solid rgba(255,255,255,.2); backdrop-filter: blur(16px) saturate(170%);
+    -webkit-backdrop-filter: blur(16px) saturate(170%); box-shadow: inset 0 1px 0 rgba(255,255,255,.25); }
+  .eyebrow { font-size: .68rem; letter-spacing: .14em; text-transform: uppercase; opacity: .75; }
+  .headline { font-size: 1.05rem; font-weight: 600; line-height: 1.3; }
+  .headline em { font-style: normal; color: #ffc35a; }
+  .row { display: grid; grid-template-columns: 22px 1fr auto; gap: .15rem .5rem; align-items: center; }
+  .row .ic { font-size: 1rem; text-align: center; }
+  .row .nm { font-size: .82rem; opacity: .92; }
+  .row .vl { font-size: .82rem; font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .row .bar { grid-column: 2 / -1; height: 9px; border-radius: 99px; background: rgba(255,255,255,.08); overflow: hidden; }
+  .row .bar i { display: block; height: 100%; width: 0; border-radius: inherit; transition: width .9s cubic-bezier(.2,.8,.2,1); }
+  .row .sub { grid-column: 2 / -1; font-size: .7rem; opacity: .65; margin-top: -.1rem; }
+  .fixed .bar i { background: repeating-linear-gradient(45deg, rgba(255,255,255,.35) 0 6px, rgba(255,255,255,.12) 6px 12px); }
+  .total { display: flex; justify-content: space-between; align-items: baseline; padding-top: .45rem;
+    border-top: 1px solid rgba(255,255,255,.14); font-size: .82rem; }
+  .total b { font-size: 1.1rem; color: #ffd36e; font-variant-numeric: tabular-nums; }
+  .strip { grid-column: 1 / -1; display: grid; grid-template-columns: 1.4fr 1fr; gap: 12px; }
+  .card { padding: .65rem .8rem; border-radius: 18px; background: rgba(255,255,255,.07);
+    border: 1px solid rgba(255,255,255,.14); font-size: .84rem; line-height: 1.35; }
+  .card b { color: #ffd36e; }
+  .people { display: flex; flex-wrap: wrap; gap: 3px; margin-top: .45rem; min-height: 22px; }
+  .people svg { width: 13px; height: 20px; opacity: 0; transform: translateY(6px); transition: all .4s; }
+  .people svg.on { opacity: 1; transform: none; }
+  .drop { display: flex; align-items: center; gap: .6rem; margin-top: .4rem; }
+  .drop .track { flex: 1; height: 10px; border-radius: 99px; background: rgba(255,255,255,.1); overflow: hidden; }
+  .drop .track i { display: block; height: 100%; width: 0; border-radius: inherit; transition: width .9s;
+    background: linear-gradient(90deg, #4fd1ff, #2ec4b6); }
+  .note { grid-column: 1 / -1; font-size: .7rem; opacity: .6; }
+  @media (max-width: 680px) {
+    .wrap { grid-template-columns: 1fr; padding: 10px; }
+    .room { min-height: 260px; } .strip { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap" id="wrap">
+  <div class="room" id="room">
+    <svg id="svg" viewBox="0 0 600 400" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+      <defs>
+        <radialGradient id="sunG"><stop offset="0" stop-color="#fffbe0"/><stop offset=".35" stop-color="#ffd23f" stop-opacity=".85"/>
+          <stop offset="1" stop-color="#ff7a1a" stop-opacity="0"/></radialGradient>
+        <linearGradient id="beamG" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffe9a8" stop-opacity=".55"/>
+          <stop offset="1" stop-color="#ff9a3c" stop-opacity=".05"/></linearGradient>
+        <radialGradient id="patchG"><stop offset="0" stop-color="#fffbe0"/><stop offset=".5" stop-color="#ffd23f"/>
+          <stop offset="1" stop-color="#ff7a1a" stop-opacity=".2"/></radialGradient>
+        <radialGradient id="warmG"><stop offset="0" stop-color="#ff5a8a" stop-opacity=".75"/><stop offset="1" stop-color="#ff5a8a" stop-opacity="0"/></radialGradient>
+        <filter id="blur"><feGaussianBlur stdDeviation="7"/></filter>
+        <filter id="blur2"><feGaussianBlur stdDeviation="2"/></filter>
+      </defs>
+      <g id="scene"></g>
+    </svg>
+    <canvas id="cv"></canvas>
+    <div class="tag out" id="tagOut">Outside<br><b>--°C</b></div>
+    <div class="tag cam"><span>cool</span><i></i><span>hot</span></div>
+    <div class="tag in" id="tagIn">Inside, AC holds<br><b>24°C</b></div>
+  </div>
+  <div class="side" id="side">
+    <div class="eyebrow" id="eyebrow">Heat X-ray · August</div>
+    <div class="headline" id="headline">Where the heat comes from</div>
+    <div id="rows"></div>
+    <div class="total"><span id="totalLabel">Your AC removes</span><b id="totalValue">—</b></div>
+  </div>
+  <div class="strip">
+    <div class="card" id="peopleCard">On a hot afternoon heat flows in at <b id="kw">—</b> — about the heat of
+      <b id="ppl">—</b> people standing in your flat.<div class="people" id="people"></div></div>
+    <div class="card"><b id="hum">—</b> of the AC's work this month is <b>drying humid air</b>, not cooling it.
+      <div class="drop"><span>💧</span><div class="track"><i id="humBar"></i></div></div></div>
+  </div>
+  <div class="note" id="note">Simulated heat budget from the hourly physics engine (2024 weather, central building
+    values). Shares are kWh of heat; AED splits the model's estimate for this month.</div>
+</div>
+
+<script>
+"use strict";
+const RM = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const NS = "http://www.w3.org/2000/svg";
+const $ = (id) => document.getElementById(id);
+const COLORS = { sun_glass: "#ffc43d", sun_walls: "#ff8a3d", people: "#ff5a8a", air: "#38d6c7", conduction: "#ff4d3d" };
+const ICONS = { sun_glass: "☀️", sun_walls: "🧱", people: "👥", air: "💨", conduction: "🌡️" };
+
+function send(type, data) { window.parent.postMessage(Object.assign({ isStreamlitMessage: true, type }, data || {}), "*"); }
+function reportHeight() { send("streamlit:setFrameHeight", { height: Math.ceil($("wrap").getBoundingClientRect().height) + 2 }); }
+window.addEventListener("message", (e) => { if (e.data && e.data.type === "streamlit:render") onRender(e.data.args || {}); });
+new ResizeObserver(() => { sizeCanvas(); reportHeight(); }).observe(document.body);
+
+function el(tag, attrs, parent) { const n = document.createElementNS(NS, tag); for (const k in attrs) n.setAttribute(k, attrs[k]);
+  if (parent) parent.appendChild(n); return n; }
+const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+const lerp = (a, b, t) => a + (b - a) * t;
+function hex(c) { const n = parseInt(c.slice(1), 16); return [n >> 16 & 255, n >> 8 & 255, n & 255]; }
+function mix(c1, c2, t) { const a = hex(c1), b = hex(c2);
+  return "#" + a.map((v, i) => Math.round(lerp(v, b[i], clamp(t))).toString(16).padStart(2, "0")).join(""); }
+// thermal-camera ("iron") palette, 0 = cool, 1 = hot
+const IRON = ["#1d2a8a", "#4b1f9a", "#9a1b8a", "#d81b60", "#ff5a1a", "#ffa21a", "#ffd23f", "#fffbe0"];
+function iron(t) { t = clamp(t) * (IRON.length - 1); const i = Math.min(Math.floor(t), IRON.length - 2); return mix(IRON[i], IRON[i + 1], t - i); }
+const aed = (x) => "AED " + Math.round(x).toLocaleString("en-US");
+
+// ---------- isometric room ----------
+const W = 230, D = 170, H = 140, X0 = 334, Y0 = 180, C30 = Math.cos(Math.PI / 6), S30 = 0.5;
+const P = (x, y, z) => [X0 + (x - y) * C30, Y0 + (x + y) * S30 - z];
+const pts = (...ps) => ps.map((p) => P(...p).map((v) => v.toFixed(1)).join(",")).join(" ");
+let args = null, geomKey = "", rowKey = "", targets = {}, rates = {}, faces = {};
+
+function buildRoom(u) {
+  const g = $("scene"); g.replaceChildren();
+  const glass = { low: .32, medium: .52, high: .74, floor_to_ceiling: .94 }[u.glass] || .52;
+  const zb = u.glass === "floor_to_ceiling" ? 4 : H * .16, zt = u.glass === "floor_to_ceiling" ? H - 4 : H * .86;
+  const y0 = D * (1 - glass) / 2, y1 = D - y0;
+  faces.win = { y0, y1, zb, zt, glass };
+  // outside sun, beam into the room and its patch on the floor
+  const sun = [74, 66];                                // the sun outside, up and to the left of the facade
+  faces.sun = sun;
+  el("circle", { cx: sun[0], cy: sun[1], r: 70, fill: "url(#sunG)", id: "sunHalo" }, g);
+  el("circle", { cx: sun[0], cy: sun[1], r: 18, fill: "#fff6d0", id: "sunCore" }, g);
+  const k = 1.15;                                      // floor reach per unit height (low afternoon sun)
+  const patch = [[Math.min(zb * k, W), y0, 0], [Math.min(zb * k, W), y1, 0], [Math.min(zt * k, W), y1, 0], [Math.min(zt * k, W), y0, 0]];
+  faces.patch = patch;
+  el("polygon", { id: "beam", points: [sun, P(0, y0, zt), P(0, y1, zb), P(...patch[1]), P(...patch[3])].map((p) => p.join(",")).join(" "),
+    fill: "url(#beamG)", opacity: 0, style: "mix-blend-mode:screen" }, g);
+  // ceiling / roof slab (glows if top floor)
+  el("polygon", { id: "roof", points: pts([0, 0, H], [W, 0, H], [W, D, H], [0, D, H]), fill: "#1d2a8a", opacity: .18,
+    stroke: "rgba(255,255,255,.18)" }, g);
+  // floor
+  el("polygon", { id: "floor", points: pts([0, 0, 0], [W, 0, 0], [W, D, 0], [0, D, 0]), fill: "#18245e", stroke: "rgba(255,255,255,.18)" }, g);
+  el("polygon", { id: "patch", points: pts(...patch), fill: "url(#patchG)", opacity: 0, filter: "url(#blur2)" }, g);
+  // facade wall (left, x = 0) with its window; internal wall (right, y = 0) unless corner unit
+  el("polygon", { id: "wallL", points: pts([0, 0, 0], [0, D, 0], [0, D, H], [0, 0, H]), fill: "#2a2f8a", stroke: "rgba(255,255,255,.22)" }, g);
+  el("polygon", { id: "win", points: pts([0, y0, zb], [0, y1, zb], [0, y1, zt], [0, y0, zt]), fill: "#3a4bb0",
+    stroke: "rgba(255,255,255,.6)", "stroke-width": 1.4 }, g);
+  for (let i = 1; i < 4; i++) { const y = lerp(y0, y1, i / 4);
+    el("line", { x1: P(0, y, zb)[0], y1: P(0, y, zb)[1], x2: P(0, y, zt)[0], y2: P(0, y, zt)[1], stroke: "rgba(255,255,255,.35)" }, g); }
+  if (u.balcony && u.balcony !== "none") {                 // balcony slab shading the glass
+    const d = u.balcony === "deep" ? 60 : 34;
+    el("polygon", { points: pts([0, 0, zt + 6], [0, D, zt + 6], [-d, D, zt + 6], [-d, 0, zt + 6]), fill: "#cfd6e6", opacity: .55 }, g);
+  }
+  el("polygon", { id: "wallR", points: pts([0, 0, 0], [W, 0, 0], [W, 0, H], [0, 0, H]), fill: u.corner ? "#2a2f8a" : "#22285a",
+    stroke: "rgba(255,255,255,.18)" }, g);
+  if (u.corner) el("polygon", { id: "win2", points: pts([W * .2, 0, zb], [W * .8, 0, zb], [W * .8, 0, zt], [W * .2, 0, zt]),
+    fill: "#3a4bb0", stroke: "rgba(255,255,255,.6)", "stroke-width": 1.4 }, g);
+  else el("polygon", { points: pts([W * .62, 0, 0], [W * .82, 0, 0], [W * .82, 0, H * .7], [W * .62, 0, H * .7]),
+    fill: "#1a1f48", stroke: "rgba(255,255,255,.25)" }, g);            // flat door (outside-air gap)
+  // AC unit high on the internal wall
+  const ac = [W * .18, 0, H * .78];
+  faces.ac = ac;
+  el("polygon", { points: pts([ac[0], 0, ac[2]], [ac[0] + 70, 0, ac[2]], [ac[0] + 70, 0, ac[2] + 22], [ac[0], 0, ac[2] + 22]),
+    fill: "#e8eef8", stroke: "#9fb4d8" }, g);
+  el("polygon", { points: pts([ac[0] + 6, 0, ac[2] + 3], [ac[0] + 64, 0, ac[2] + 3], [ac[0] + 64, 0, ac[2] + 6], [ac[0] + 6, 0, ac[2] + 6]),
+    fill: "#7cc4ff" }, g);
+  // people (household size) and an appliance glow
+  const n = Math.max(1, Math.min(u.people || 2, 4));
+  faces.people = [];
+  for (let i = 0; i < n; i++) {
+    const base = P(W * (.45 + .14 * (i % 2)), D * (.4 + .16 * i), 0);
+    faces.people.push(base);
+    const pg = el("g", { transform: `translate(${base[0].toFixed(0)} ${base[1].toFixed(0)})` }, g);
+    el("ellipse", { cx: 0, cy: -28, rx: 30, ry: 36, fill: "url(#warmG)", class: "warm", opacity: .5 }, pg);
+    el("rect", { x: -6, y: -40, width: 12, height: 32, rx: 6, fill: "#ff7aa0" }, pg);
+    el("circle", { cx: 0, cy: -47, r: 6.5, fill: "#ff9ab8" }, pg);
+  }
+  const tv = P(W * .9, D * .2, 0);
+  faces.tv = tv;
+  el("rect", { x: tv[0] - 16, y: tv[1] - 46, width: 32, height: 46, rx: 3, fill: "#ff6a5a", opacity: .75, id: "fridge" }, g);
+}
+
+// ---------- particles (canvas) ----------
+const cv = $("cv"), ctx = cv.getContext("2d");
+let scale = 1, offX = 0, offY = 0, parts = [];
+function sizeCanvas() {
+  const r = $("room").getBoundingClientRect(), dpr = window.devicePixelRatio || 1;
+  cv.width = r.width * dpr; cv.height = r.height * dpr;
+  scale = Math.min(r.width / 600, r.height / 400); offX = (r.width - 600 * scale) / 2; offY = (r.height - 400 * scale) / 2;
+  ctx.setTransform(dpr * scale, 0, 0, dpr * scale, dpr * offX, dpr * offY);
+}
+function emit(kind) {
+  const f = faces; let x, y, tx, ty, life = 1.6 + Math.random();
+  const rnd = (a, b) => a + Math.random() * (b - a);
+  if (kind === "sun_glass") { [x, y] = f.sun; const p = f.patch, t = Math.random(), s = Math.random();
+    [tx, ty] = P(lerp(p[0][0], p[2][0], s), lerp(p[0][1], p[1][1], t), 0); life = 1.1 + Math.random() * .6; }
+  else if (kind === "sun_walls" || kind === "conduction") {
+    const y0 = rnd(4, D - 4), z0 = rnd(6, H - 6), roof = kind === "sun_walls" && args.unit.top_floor && Math.random() < .5;
+    if (roof) { [x, y] = P(rnd(20, W - 20), rnd(20, D - 20), H + 40); [tx, ty] = P(rnd(30, W - 30), rnd(30, D - 30), H - 30); }
+    else { [x, y] = P(-48, y0, z0); [tx, ty] = P(40 + Math.random() * 40, y0, z0 - 10); }
+  }
+  else if (kind === "air") {
+    if (Math.random() < .55) { const w = f.win, yy = Math.random() < .5 ? w.y0 : w.y1; [x, y] = P(-40, yy, rnd(w.zb, w.zt)); [tx, ty] = P(60, yy, rnd(10, 60)); }
+    else { [x, y] = P(rnd(W * .62, W * .82), -40, rnd(4, H * .6)); [tx, ty] = P(rnd(W * .55, W * .85), 50, rnd(4, 40)); }
+    life = 2 + Math.random();
+  }
+  else if (kind === "people") { const b = Math.random() < .25 ? f.tv : f.people[Math.floor(Math.random() * f.people.length)];
+    [x, y] = [b[0] + rnd(-10, 10), b[1] - rnd(20, 45)]; [tx, ty] = [x + rnd(-12, 12), y - rnd(50, 90)]; }
+  else if (kind === "cold") { const a = P(f.ac[0] + rnd(8, 62), 0, f.ac[2]); [x, y] = a; [tx, ty] = P(f.ac[0] + rnd(10, 110), rnd(60, D * .9), rnd(10, 60));
+    life = 2.2 + Math.random(); }
+  parts.push({ kind, x, y, sx: x, sy: y, tx, ty, t: 0, life, wob: Math.random() * 6.28 });
+}
+let last = performance.now(), acc = {};
+function frame(now) {
+  requestAnimationFrame(frame);
+  if (!args) return;
+  const dt = Math.min((now - last) / 1000, .1); last = now;
+  for (const k in targets) rates[k] = lerp(rates[k] || 0, targets[k], RM ? 1 : .06);
+  if (!RM) for (const k in rates) {                 // emission ∝ the source's share of the heat
+    acc[k] = (acc[k] || 0) + rates[k] * dt;
+    while (acc[k] >= 1 && parts.length < 420) { emit(k); acc[k] -= 1; }
+  }
+  const r = $("room").getBoundingClientRect();
+  ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, cv.width, cv.height); ctx.restore();
+  ctx.globalCompositeOperation = "lighter";
+  parts = parts.filter((p) => (p.t += dt / p.life) < 1);
+  for (const p of parts) {
+    const e = p.t, x = lerp(p.sx, p.tx, e) + (p.kind === "air" ? Math.sin(e * 9 + p.wob) * 6 : p.kind === "people" ? Math.sin(e * 6 + p.wob) * 4 : 0);
+    const y = lerp(p.sy, p.ty, e) + (p.kind === "conduction" || p.kind === "sun_walls" ? Math.sin(e * 12 + p.wob) * 2 : 0);
+    const a = Math.sin(Math.PI * e) * (p.kind === "cold" ? .75 : .9);
+    const col = p.kind === "cold" ? "214,238,255" : hex(COLORS[p.kind]).join(",");
+    const rad = p.kind === "sun_glass" ? 2.3 : p.kind === "air" ? 2.6 : p.kind === "cold" ? 3.4 : 2.1;
+    ctx.fillStyle = `rgba(${col},${a.toFixed(3)})`;
+    ctx.beginPath(); ctx.arc(x, y, rad, 0, 6.283); ctx.fill();
+    if (p.kind === "air" && p.t > .3 && p.t < .7 && ((p.wob * 10) | 0) % 3 === 0) {       // humidity droplets
+      ctx.fillStyle = `rgba(160,235,255,${(a * .8).toFixed(3)})`; ctx.beginPath(); ctx.arc(x + 3, y + 3, 1.3, 0, 6.283); ctx.fill(); }
+  }
+  ctx.globalCompositeOperation = "source-over";
+}
+
+// ---------- render ----------
+function onRender(a) {
+  args = a;
+  const u = a.unit || {};
+  const gk = JSON.stringify([u.glass, u.balcony, u.corner, u.top_floor, u.people]);
+  if (gk !== geomKey) { geomKey = gk; buildRoom(u); }
+  const src = a.sources || [], tot = Math.max(a.total_kwh || 0, 1e-6);
+  const share = Object.fromEntries(src.map((s) => [s.key, Math.max(s.kwh, 0) / tot]));
+  // particle rates (per second) scale with each source's heat; the AC's cold stream with the total
+  const intensity = clamp(tot / 1600, .15, 1);
+  for (const s of src) targets[s.key] = 70 * share[s.key] * intensity;
+  targets.cold = 34 * intensity;
+  // thermal colours: surfaces glow with the heat they pass in
+  const sg = share.sun_glass || 0, sw = share.sun_walls || 0, cd = share.conduction || 0, pp = share.people || 0, ai = share.air || 0;
+  const heat = intensity;
+  $("win").setAttribute("fill", iron(clamp(.18 + (sg * 1.6 + cd * .6) * heat)));
+  if ($("win2")) $("win2").setAttribute("fill", iron(clamp(.18 + (sg * 1.4 + cd * .6) * heat)));
+  $("wallL").setAttribute("fill", iron(clamp(.08 + (cd * 1.2 + sw * 2) * heat)));
+  $("roof").setAttribute("fill", u.top_floor ? iron(clamp(.15 + sw * 3 * heat + cd * heat)) : "#1d2a8a");
+  $("roof").setAttribute("opacity", u.top_floor ? .75 : .16);
+  $("floor").setAttribute("fill", iron(clamp(.04 + .12 * heat)));
+  $("patch").setAttribute("opacity", clamp(sg * 3 * heat).toFixed(2));
+  $("beam").setAttribute("opacity", clamp(sg * 2.6 * heat).toFixed(2));
+  $("sunHalo").setAttribute("opacity", (.35 + .65 * heat).toFixed(2));
+  document.querySelectorAll(".warm").forEach((w) => w.setAttribute("opacity", (.25 + pp * 1.6).toFixed(2)));
+  $("fridge").setAttribute("opacity", (.35 + pp).toFixed(2));
+  // labels
+  $("tagOut").innerHTML = `Outside, avg high<br><b>${Math.round(a.outside_c)}°C</b> · ${Math.round(a.outside_rh)}% RH`;
+  $("tagIn").innerHTML = `Inside, AC holds<br><b>${a.setpoint}°C</b>`;
+  $("eyebrow").textContent = `Heat X-ray · ${a.month_name}`;
+  const topSrc = [...src].sort((x, y) => y.kwh - x.kwh)[0];
+  $("headline").innerHTML = topSrc ? `In ${a.month_name}, most heat comes from <em>${topSrc.label.toLowerCase()}</em>` : "Where the heat comes from";
+  const rows = $("rows");
+  const ranked = [...src].sort((x, y) => y.kwh - x.kwh);                 // biggest source first
+  const rk = ranked.map((s) => s.key).join() + (a.fixed_aed ? "|fixed" : "");
+  if (rk !== rowKey) {
+    rowKey = rk; rows.replaceChildren();
+    for (const s of ranked) rows.insertAdjacentHTML("beforeend", `<div class="row" data-k="${s.key}"><span class="ic">${ICONS[s.key]}</span>
+      <span class="nm">${s.label}</span><span class="vl"></span><div class="bar"><i style="background:${COLORS[s.key]}"></i></div>
+      <span class="sub"></span></div>`);
+    if (a.fixed_aed) rows.insertAdjacentHTML("beforeend", `<div class="row fixed" data-k="fixed"><span class="ic">🔒</span>
+      <span class="nm">Fixed capacity charge</span><span class="vl"></span><div class="bar"><i></i></div><span class="sub"></span></div>`);
+  }
+  const maxShare = Math.max(...src.map((s) => Math.abs(s.kwh) / tot), .01);
+  for (const s of src) {
+    const row = rows.querySelector(`[data-k="${s.key}"]`); if (!row) continue;
+    const pct = s.kwh / tot;
+    row.querySelector(".vl").textContent = `${Math.round(pct * 100)}%` + (s.aed != null ? ` · ${aed(s.aed)}` : "");
+    row.querySelector(".bar i").style.width = `${(Math.abs(pct) / maxShare * 100).toFixed(1)}%`;
+    row.querySelector(".sub").textContent = `${Math.round(s.kwh).toLocaleString("en-US")} kWh of heat` + (s.kwh < 0 ? " (helps cool)" : "");
+  }
+  const fixedRow = rows.querySelector('[data-k="fixed"]');
+  if (fixedRow) {
+    fixedRow.querySelector(".vl").textContent = aed(a.fixed_aed);
+    fixedRow.querySelector(".bar i").style.width = `${clamp(a.fixed_aed / Math.max(a.month_aed, 1)) * 100}%`;
+    fixedRow.querySelector(".sub").textContent = "paid even with zero heat (contracted capacity)";
+  }
+  $("totalLabel").textContent = a.payer_note || `Your AC removes ${Math.round(tot).toLocaleString("en-US")} kWh of heat`;
+  $("totalValue").textContent = a.month_aed != null ? `${aed(a.month_aed)} / month` : `${Math.round(tot).toLocaleString("en-US")} kWh`;
+  $("kw").textContent = `${a.design_kw.toFixed(1)} kW`;
+  $("ppl").textContent = Math.round(a.people_equivalent);
+  const pc = $("people"), n = Math.min(Math.round(a.people_equivalent), 60);
+  while (pc.children.length < n) pc.insertAdjacentHTML("beforeend",
+    '<svg viewBox="0 0 13 20"><circle cx="6.5" cy="4" r="3.2" fill="#ff9ab8"/><rect x="3" y="8" width="7" height="11" rx="3.5" fill="#ff7aa0"/></svg>');
+  while (pc.children.length > n) pc.lastChild.remove();
+  [...pc.children].forEach((c, i) => setTimeout(() => c.classList.add("on"), RM ? 0 : 25 * i));
+  $("hum").textContent = `${Math.round(a.latent_share * 100)}%`;
+  $("humBar").style.width = `${(a.latent_share * 100).toFixed(1)}%`;
+  $("note").textContent = a.note || $("note").textContent;
+  sizeCanvas(); reportHeight();
+}
+
+send("streamlit:componentReady", { apiVersion: 1 });
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>

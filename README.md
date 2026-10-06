@@ -5,8 +5,8 @@
 > Existing tools are appliance calculators that work after you move in. CoolScore predicts a specific unit's
 > cooling cost before you sign, using building physics and Dubai's cooling tariffs.
 
-**Live demo:** [coolscore-dubai.streamlit.app](https://coolscore-dubai-jvw959b8tqbsrazygcm7kk.streamlit.app/)
-(try the [one-click example](https://coolscore-dubai-jvw959b8tqbsrazygcm7kk.streamlit.app/Check_a_Unit?example=1)) ·
+**Live:** [coolscore-dubai.vercel.app](https://coolscore-dubai.vercel.app) (the landing film, then the app;
+try the [one-click example](https://coolscore-dubai.vercel.app/check?example=1)) ·
 **Demo video:** *[placeholder]* ·
 **Try it locally in 2 minutes:** [How to run](#how-to-run)
 
@@ -252,9 +252,10 @@ On Windows use `.venv\Scripts\python.exe` instead of `.venv/bin/python`. Then:
 | Command | What it does | Time |
 |---|---|---|
 | `python tasks.py launch` | Start the app and open it in the browser (what the `.cmd` runs) | ~3 s |
-| `python tasks.py app` | Streamlit app at http://localhost:8501 (uses the committed model) | instant |
+| `python tasks.py web` | The live site locally: landing + app pages + `/api` at http://127.0.0.1:5240 | instant |
+| `python tasks.py app` | The original Streamlit app at http://localhost:8501 (uses the committed model) | instant |
 | `python tasks.py api` | FastAPI at http://127.0.0.1:8000/docs | instant |
-| `python tasks.py test` | 171 pytest tests | ~2 min |
+| `python tasks.py test` | 188 pytest tests | ~2 min |
 | `python tasks.py data` | Re-fetch and correct weather, facade sun (network) | ~30 s |
 | `python tasks.py simulate` | 40,000 scenarios through physics + billing | ~4 min |
 | `python tasks.py train` | Surrogate, quantiles, conformal calibration, A–E bands | ~2 min |
@@ -268,7 +269,12 @@ API at runtime except the optional Claude parser.
 **Optional AI features:** set `ANTHROPIC_API_KEY` in the environment or in `.streamlit/secrets.toml` (see
 `.streamlit/secrets.toml.example`). Without it the app uses text matching and template explanations, at zero cost.
 
-**Deploying to Streamlit Community Cloud:** main file `app/Home.py`, Python 3.13 (Advanced settings), and
+**Deploying to Vercel:** `npx vercel deploy --prod` from the repo root. `vercel.json` serves `site/` as static
+files and runs `api/index.py` as one Python function for every `/api/*` route. The function uses
+`data/demo/coolscore_model_lite.npz`, a NumPy copy of the trained trees (identical predictions; scikit-learn and
+SciPy are too big for a serverless function). After retraining, refresh it with `python -m coolscore.model.lite`.
+
+**Deploying to Streamlit Community Cloud** (the original app): main file `app/Home.py`, Python 3.13 (Advanced settings), and
 optionally the `ANTHROPIC_API_KEY` secret. The model and weather files are committed (about 15 MB in total). The
 Developer View builds its facade-sun cache on first use (about 5 s). Open-Meteo's free tier is for non-commercial
 use, which suits a portfolio demo; a commercial launch needs its paid plan.
@@ -279,7 +285,8 @@ use, which suits a portfolio demo; a commercial launch needs its paid plan.
 config/      assumptions.yaml (every real-world number + source) · archetypes · communities · settings
 data/        raw/ weather cache · demo/ model artifact · real_bills/ template · simulated/ (regenerable)
 src/coolscore/  weather · physics · billing · simulate · model · validation · assistant
-app/         Streamlit Home.py + 7 pages      api/   FastAPI      tests/   171 tests
+site/        the live site: landing film + 7 app pages (no build)   api/   index.py (Vercel) · main.py (FastAPI)
+app/         Streamlit Home.py + 7 pages (original UI)              tests/ 188 tests
 docs/        prd · competitive_landscape · user-research/ · business_model · gtm_and_pilot · pitch_deck
              interview_prep · model_card · methodology · assumptions · evidence/ · validation_report
 ```

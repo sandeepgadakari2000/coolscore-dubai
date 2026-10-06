@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Listing badge · CoolScore Dubai</title>
+  <meta name="description" content="How a CoolScore badge could sit on a Dubai property listing: the grade and the summer cooling range, labelled as a simulated estimate.">
+  <meta name="theme-color" content="#060914">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23060914'/%3E%3Ccircle cx='16' cy='19' r='7' fill='none' stroke='%23f5b942' stroke-width='2'/%3E%3Cpath d='M5 19h22' stroke='%23f5b942' stroke-width='2'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/site.css"><link rel="stylesheet" href="/css/app.css">
+</head>
+<body>
+<main class="app-main">
+  <section class="page-hero">
+    <p class="eyebrow">For portals and brokers</p>
+    <h1 class="display sm">Listing badge</h1>
+    <p class="lede">How a CoolScore badge could sit on a property listing. A generic card with a fictional building: no
+      real portal, developer or tower is shown.</p>
+    <span class="sim-tag">Simulated estimate · labelled on the badge</span>
+  </section>
+
+  <section class="grid g-badge">
+    <div>
+      <article class="listing" id="listing" aria-label="Example listing card">
+        <div class="ls-photo">
+          <video src="/media/evening-loop.mp4" poster="/media/evening.jpg" autoplay muted loop playsinline preload="metadata" aria-hidden="true"></video>
+          <span class="ls-tag">AI illustration · fictional building</span>
+          <span class="ls-fav" aria-hidden="true">♡</span>
+        </div>
+        <div class="ls-body" id="ls-body"><p class="note">Loading…</p></div>
+      </article>
+      <div class="card mt" id="row-card">
+        <h2>In a search list</h2><p class="sub">The compact form, next to the price.</p>
+        <div id="row"></div>
+      </div>
+    </div>
+    <div class="stack">
+      <div class="card">
+        <h2>Why a portal might show it</h2>
+        <p class="prose">It answers the most common unasked question (“what will the AC cost?”), lets buyers filter by true
+          cost, and gives good units a reason to stand out. Low-scoring units get a concrete fix (blinds, film, AC
+          temperature) instead of a vague reputation.</p>
+        <h2 class="mt">Rules for a fair badge</h2>
+        <ul class="rules">
+          <li><b>Show the range</b>, not a single number.</li>
+          <li><b>Label it as simulated</b> — on the badge itself.</li>
+          <li><b>Let owners add real bills</b> to calibrate it.</li>
+          <li><b>Score every listing</b>, not only the good ones.</li>
+        </ul>
+        <details class="how"><summary>How is this calculated?</summary><div id="how"></div></details>
+      </div>
+      <div class="card">
+        <details class="more" style="margin:0;padding:0;border:0" open><summary>Change the demo unit</summary><div id="unit" class="mt"></div></details>
+      </div>
+    </div>
+  </section>
+</main>
+<script type="module" src="/js/app/badge.js"></script>
+</body>
+</html>

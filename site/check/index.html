@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Check a unit · CoolScore Dubai</title>
+  <meta name="description" content="Paste a Dubai listing or set the details: CoolScore grades the flat A–E and estimates its cooling cost, month by month, before you sign.">
+  <meta name="theme-color" content="#060914">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23060914'/%3E%3Ccircle cx='16' cy='19' r='7' fill='none' stroke='%23f5b942' stroke-width='2'/%3E%3Cpath d='M5 19h22' stroke='%23f5b942' stroke-width='2'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/site.css"><link rel="stylesheet" href="/css/app.css">
+</head>
+<body>
+<main class="app-main">
+  <section class="page-hero">
+    <p class="eyebrow">Live estimate</p>
+    <h1 class="display sm">Check a unit</h1>
+    <p class="lede">Paste a listing or set the details. The Dubai sky, the sun on your windows and the cooling estimate
+      update as you go — no submit button.</p>
+    <span class="sim-tag">Simulated estimates · ranges, not quotes</span>
+  </section>
+
+  <section class="card" id="start" aria-label="Start from a listing">
+    <div class="grid g-start">
+      <label class="field"><span>Start from a listing (optional)</span><textarea id="listing-text" rows="3" placeholder="Paste the listing description here…"></textarea></label>
+      <div class="btn-row">
+        <button class="pill pill-gold sm" id="read" disabled>Read listing</button>
+        <button class="pill pill-ghost sm" id="example">Try an example</button>
+        <button class="link-btn" id="helper-toggle" aria-expanded="false">Facing helper</button>
+      </div>
+    </div>
+    <div id="helper" class="mt" hidden>
+      <div class="fields">
+        <label class="field"><span>Community</span><select id="h-comm"></select></label>
+        <label class="field"><span>What does the listing say the view is?</span><select id="h-view"></select></label>
+      </div>
+      <p class="flag mt" id="h-out" aria-live="polite"></p>
+    </div>
+    <div id="parse-out"></div>
+  </section>
+
+  <section class="grid g-main mt">
+    <div class="card"><h2>The unit</h2><p class="sub">Every change updates the estimate.</p><div id="unit"></div></div>
+    <div class="stack">
+      <div class="card" id="result" aria-live="polite"><p class="note">Estimating…</p></div>
+      <div class="card">
+        <label class="field"><span>See a typical day in · <b id="month-out">Aug</b></span><input id="month" type="range" min="0" max="11" step="1" value="7"></label>
+        <iframe class="embed mt" id="stage" src="/components/climate.html" title="Live Dubai climate scene for this unit" loading="eager"></iframe>
+        <details class="how"><summary>How is this calculated?</summary><div id="how"></div></details>
+      </div>
+    </div>
+  </section>
+
+  <section class="card mt" id="xray-card">
+    <h2>Heat X-ray · <span id="xray-month">August</span></h2>
+    <p class="sub">Where this flat's heat comes from and what each part costs — the AC has to remove all of it.</p>
+    <iframe class="embed" id="xray" src="/components/xray.html" title="Heat X-ray: this flat's heat by source"></iframe>
+    <details class="how"><summary>How is the heat X-ray calculated?</summary>
+      <p>The hourly physics engine simulates this flat for the month on 2024 weather, then again with each heat source switched off: sun through the glass, sun on walls and roof, people and appliances, outside air and humidity. Each source's share is how much the AC's load falls without it (the average of two switch-off orders, so the parts add up exactly). What is left with all four off is heat conducted through walls and glass from the hot outdoor air.</p>
+      <p>AED: this month's typical bill minus the fixed capacity charge, split by each source's share of the heat. The capacity charge is shown separately because it doesn't depend on heat. 'People' compares the peak heat flow on a hot afternoon (98th-percentile daily peak) with one person's body heat (72 W + 45 W, ASHRAE). Central building values, so this is a typical unit like yours, not a measurement.</p>
+    </details>
+  </section>
+
+  <div id="assumed" class="mt"></div>
+
+  <section class="grid g2 mt">
+    <div class="card"><h2>What drives this unit's cost</h2><p class="sub">Simulated difference per year vs a reference unit.</p><div id="drivers"></div></div>
+    <div class="card"><h2>Month by month</h2><p class="sub">Typical bill, P10–P90 whiskers, coloured by the month's heat. Tap a month to see its day.</p><div class="chart" id="months"></div></div>
+  </section>
+
+  <section class="card mt">
+    <h2>What if…</h2><p class="sub">Change one thing and see the simulated effect on this unit.</p>
+    <div class="fields f4" id="whatif-controls">
+      <label class="field"><span>Floor · <b id="wi-floor-out">12</b></span><input id="wi-floor" type="range" min="1" max="30" value="12"></label>
+      <label class="field"><span>Facing</span><select id="wi-face"></select></label>
+      <label class="field"><span>AC temperature · <b id="wi-sp-out">24.0 °C</b></span><input id="wi-sp" type="range" min="20" max="28" step="0.5" value="24"></label>
+      <label class="field"><span>Chiller-free</span><label class="toggle" style="padding:8px 0"><input type="checkbox" id="wi-free"><i></i><span id="wi-free-l">Landlord pays cooling</span></label></label>
+    </div>
+    <div class="kpis mt" id="whatif"></div>
+    <details class="how"><summary>How is the what-if calculated?</summary><p>Both versions of the unit go through the model that includes household details (your details, or a standard household of bedrooms + 1 people, out by day, if you didn't add them). The difference between them is added to this unit's estimate above, so 'now' always matches the result. Simulated, like every figure here.</p></details>
+  </section>
+
+  <section class="grid g-text mt">
+    <div class="card"><h2>In plain words</h2><div id="plain" class="prose"></div></div>
+    <div class="card"><h2>Questions to ask the agent</h2><ul id="questions" class="prose"></ul></div>
+  </section>
+</main>
+<div class="livebar" id="livebar" aria-hidden="true"></div>
+<script type="module" src="/js/app/check.js"></script>
+</body>
+</html>

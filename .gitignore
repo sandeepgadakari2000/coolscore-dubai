@@ -17,5 +17,7 @@ data/simulated/*
 # Local tool state
 .claude/settings.local.json
 
-# Derived facade irradiance (rebuilt from committed weather on first use)
-data/raw/facade/
+# Facade irradiance caches (data/raw/facade/) are committed: serverless hosting reads them instead of running pvlib.
+
+.vercel
+.env*

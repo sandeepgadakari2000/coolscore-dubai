@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import copy
 import lzma
+import os
 import pickle
 from dataclasses import asdict, dataclass, field
 from functools import lru_cache
@@ -36,8 +37,22 @@ REFERENCE_LABELS = {
 }
 
 
+def _use_lite() -> bool:
+    """Serverless hosting runs without scikit-learn: use the NumPy copy of the trees (``model.lite``)."""
+    if os.environ.get("COOLSCORE_MODEL") in ("lite", "full"):
+        return os.environ["COOLSCORE_MODEL"] == "lite"
+    try:
+        import sklearn  # noqa: F401
+    except ImportError:
+        return True
+    return False
+
+
 @lru_cache(maxsize=1)
 def load_artifact(path: str | None = None) -> dict:
+    if path is None and _use_lite():
+        from coolscore.model import lite
+        return lite.load()
     p = Path(path) if path else config.path("demo") / "coolscore_model.pkl.xz"
     if not p.exists():
         raise FileNotFoundError(f"{p} missing; run `python tasks.py simulate` and `python tasks.py train`")

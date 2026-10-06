@@ -5,8 +5,7 @@ import { TowerView } from './tower3d.js';
 import { initScenes } from './scenes.js';
 import { TOWER, FACINGS, FACING_WORDS, dayAt, loadAt, fmtClock } from './timeline.js';
 
-const APP = 'https://coolscore-dubai-jvw959b8tqbsrazygcm7kk.streamlit.app';
-const LINKS = { check: `${APP}/Check_a_Unit`, example: `${APP}/Check_a_Unit?example=1`, method: `${APP}/Methodology` };
+const LINKS = { check: '/check', example: '/check?example=1', method: '/methodology' };
 const GRADE_VAR = { A: 'var(--A)', B: 'var(--B)', C: 'var(--C)', D: 'var(--D)', E: 'var(--E)' };
 const GRADE_WORD = { A: 'very low', B: 'low', C: 'typical', D: 'high', E: 'very high' };
 const BUDGET = [['sun_glass', '#f5b942', 'Sun through glass'], ['sun_walls', '#ff7a59', 'Sun on roof & walls'], ['people', '#e8c38a', 'People'],

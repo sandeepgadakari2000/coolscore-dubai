@@ -13,6 +13,25 @@
 | 8 | Business layer + real-bill validation | ✅ Done 2026-10-03 |
 | 9 | Ship | ✅ Done 2026-10-03 |
 
+## Vercel app (2026-10-06): the whole app off Streamlit
+
+**Done**
+- Live at https://coolscore-dubai.vercel.app: the landing film, then all seven pages rebuilt as static pages
+  (`site/<page>/`, vanilla JS, no build) over one Python function (`api/index.py`, FastAPI): Check a Unit,
+  Compare, Investor, Developer, Badge, Business, Methodology. Same numbers as the Streamlit app
+  (`coolscore.web` builds every page's data from the same engine); the climate scene and heat X-ray are the
+  original components, embedded.
+- Everything updates live (no submit buttons). New visuals: stacked true-cost bars (Compare), a gross → net
+  yield waterfall with the cooling P10–P90 whisker (Investor), a facade grid that re-grades in a wave (Developer),
+  a listing card on the landing's evening film (Badge), revenue streams vs costs (Business), sanity-band chart and
+  a searchable assumptions register (Methodology). Phones: results first on the calculators, no sideways scroll.
+- **Lite model:** `coolscore.model.lite` flattens the 18 HistGradientBoosting models into NumPy arrays
+  (4.7 MB). Predictions match the full model to 1e-13, so the function needs no scikit-learn/SciPy.
+- `pvlib` is imported only where facade sun is computed (not needed at request time).
+- Landing CTAs now open `/check`, `/check?example=1` and `/methodology`.
+
+**Tests:** 188 passing (13 new: lite parity incl. unseen categories, every API route, pages and links).
+
 ## Landing page (2026-10-06): one tower, one August day
 
 **Done**

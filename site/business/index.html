@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Business case · CoolScore Dubai</title>
+  <meta name="description" content="CoolScore pricing, unit economics and a 12-month P&L you can change. Every default is a labelled assumption, not market data.">
+  <meta name="theme-color" content="#060914">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23060914'/%3E%3Ccircle cx='16' cy='19' r='7' fill='none' stroke='%23f5b942' stroke-width='2'/%3E%3Cpath d='M5 19h22' stroke='%23f5b942' stroke-width='2'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/site.css"><link rel="stylesheet" href="/css/app.css">
+</head>
+<body>
+<main class="app-main">
+  <section class="page-hero">
+    <p class="eyebrow">Pricing · unit economics · P&amp;L</p>
+    <h1 class="display sm">Business case</h1>
+    <p class="lede">Every default is a labelled <b>assumption</b> (our proposed prices and plan) from
+      <code>config/assumptions.yaml</code>, not market data. Change prices, plan and costs and the year re-plans itself.</p>
+    <span class="sim-tag">Assumptions · not market data</span>
+  </section>
+
+  <section class="grid g-biz res-first">
+    <div class="card biz-ctl" id="ctl" aria-label="Prices, plan and costs"></div>
+    <div class="stack">
+      <div class="kpis biz-kpis" id="kpis" aria-live="polite"></div>
+      <div class="card"><h2>Twelve months</h2><p class="sub">Revenue by stream, stacked, against monthly costs. Hover a month.</p>
+        <div class="legend-row" id="legend"></div>
+        <div class="chart" id="pnl"></div></div>
+      <div class="grid g2">
+        <div class="card"><h2>Broker seat</h2><div id="ue-seat"></div></div>
+        <div class="card"><h2>Scored listing</h2><div id="ue-list"></div></div>
+      </div>
+      <p class="note">Scoring itself is near-free (a model lookup); the main variable cost is optional AI listing parsing.
+        The real costs are people, sales time and bill-data collection.</p>
+      <div class="card">
+        <details class="how" style="margin-top:0"><summary>12-month P&amp;L table</summary><div class="tbl-wrap"><table class="tbl" id="tbl"></table></div></details>
+        <details class="how"><summary>How is this calculated?</summary>
+          <p>Revenue = pilot fee (month 1) + broker seats × price (from month 4, with churn) + scored portal listings × price
+            (from the portal start month) + developer reports (quarterly) + consumer reports. Costs = AI parsing per listing
+            (Claude Haiku 4.5 list price × tokens) + fixed monthly costs + part-time sales from month 4 + founder salary
+            (0 by default: unpaid in year 1). Recommendation and reasoning: docs/business_model.md.</p></details>
+      </div>
+    </div>
+  </section>
+</main>
+<script type="module" src="/js/app/business.js"></script>
+</body>
+</html>

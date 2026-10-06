@@ -1,0 +1,18 @@
+# Vercel serves the website in site/ and one Python function in api/ (the Streamlit app stays on Streamlit Cloud).
+# Allowlist: ignore everything, then bring back what the deployment needs.
+/*
+!/site
+!/api
+!/src
+!/config
+!/data
+!/vercel.json
+# not needed at runtime (the function uses the NumPy copy of the model and the committed weather/facade caches)
+/data/simulated
+/data/raw/stations
+/data/demo/coolscore_model.pkl.xz
+**/__pycache__
+# local-only entry points (not Vercel functions): the dev server and the B2B API's own app
+/api/dev.py
+/api/main.py
+/api/__init__.py

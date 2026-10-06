@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Compare units · CoolScore Dubai</title>
+  <meta name="description" content="Put 2–4 Dubai flats side by side and see what each really costs per month once cooling and the housing fee are added to the rent.">
+  <meta name="theme-color" content="#060914">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23060914'/%3E%3Ccircle cx='16' cy='19' r='7' fill='none' stroke='%23f5b942' stroke-width='2'/%3E%3Cpath d='M5 19h22' stroke='%23f5b942' stroke-width='2'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/site.css"><link rel="stylesheet" href="/css/app.css">
+</head>
+<body>
+<main class="app-main">
+  <section class="page-hero">
+    <p class="eyebrow">True monthly cost</p>
+    <h1 class="display sm">Compare units</h1>
+    <p class="lede">Rent is only part of the cost. Put 2–4 homes side by side and see what each one really costs per month
+      once cooling and the housing fee are added.</p>
+    <span class="sim-tag">Simulated estimates · ranges, not quotes</span>
+  </section>
+
+  <section class="card" id="units-card" aria-label="The units">
+    <div class="cmp-bar">
+      <div class="seg" role="radiogroup" aria-label="Units to compare">
+        <span>Units</span>
+        <button role="radio" data-n="2" aria-checked="true">2</button>
+        <button role="radio" data-n="3" aria-checked="false">3</button>
+        <button role="radio" data-n="4" aria-checked="false">4</button>
+      </div>
+      <div class="tabs" id="tabs" role="tablist"></div>
+    </div>
+    <div id="forms"></div>
+  </section>
+
+  <section class="mt" id="verdict" aria-live="polite"></section>
+
+  <section class="cmp-cards mt" id="cards"></section>
+
+  <section class="card mt" id="chart-card">
+    <h2>What each home costs per month</h2>
+    <p class="sub">Rent, typical simulated cooling and the 5% housing fee, stacked.</p>
+    <div class="legend-row"><span style="--c:#5d6b8a">Rent</span><span style="--c:#ff7a59">Cooling (typical)</span><span style="--c:#b9a77f">Housing fee</span></div>
+    <div class="chart" id="stack"></div>
+    <details class="how"><summary>How is this calculated?</summary>
+      <p>True cost per month = annual rent ÷ 12 + typical (P50) simulated cooling ÷ 12 + Dubai Municipality housing fee
+        (5% of rent ÷ 12). Cooling ranges are P10–P90. Other electricity, water and service charges are not included.</p>
+      <div id="formulas"></div>
+    </details>
+  </section>
+</main>
+<script type="module" src="/js/app/compare.js"></script>
+</body>
+</html>
