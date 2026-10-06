@@ -30,7 +30,7 @@
 - `pvlib` is imported only where facade sun is computed (not needed at request time).
 - Landing CTAs now open `/check`, `/check?example=1` and `/methodology`.
 
-**Tests:** 188 passing (13 new: lite parity incl. unseen categories, every API route, pages and links).
+**Tests:** 195 passing (20 new: lite parity incl. unseen categories, every API route, input limits, pages and links).
 
 ## Landing page (2026-10-06): one tower, one August day
 

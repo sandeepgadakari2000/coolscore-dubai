@@ -81,6 +81,7 @@ def unit_economics(b: BusinessInputs) -> dict:
     seat_cost = llm * 20 + b.costs["hosting_aed"] / max(b.plan["seats_per_brokerage"] * 5, 1)
     seat_price = b.pricing["broker_seat_aed_month"]
     listing_price = b.pricing["portal_aed_per_scored_listing_month"]
+    # a price of 0 has no margin (None), not a division by zero
     return {"llm_cost_per_listing_aed": llm, "broker_seat_price": seat_price, "broker_seat_cost": seat_cost,
-            "broker_seat_margin": 1 - seat_cost / seat_price, "listing_price": listing_price,
-            "listing_margin": 1 - llm / listing_price}
+            "broker_seat_margin": 1 - seat_cost / seat_price if seat_price > 0 else None,
+            "listing_price": listing_price, "listing_margin": 1 - llm / listing_price if listing_price > 0 else None}

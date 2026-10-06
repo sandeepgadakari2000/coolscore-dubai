@@ -97,6 +97,20 @@ def test_bad_input_is_a_422_not_a_crash(client) -> None:
     assert client.post("/api/compare", json={"units": [UNIT]}).status_code == 422
 
 
+@pytest.mark.parametrize("change", [{"size_sqft": 50}, {"size_sqft": 9000}, {"floor": 0}, {"total_floors": 200, "floor": 160},
+                                    {"setpoint_c": 12}, {"household_size": 0}])
+def test_out_of_range_units_are_refused_with_a_reason(client, change) -> None:
+    r = client.post("/api/estimate", json={"listing": {**UNIT, **change}})
+    assert r.status_code == 422 and "between" in r.json()["detail"]
+
+
+def test_business_survives_a_price_of_zero(client) -> None:
+    r = client.post("/api/business", json={"pricing": {"broker_seat_aed_month": 0, "portal_aed_per_scored_listing_month": 0}})
+    assert r.status_code == 200
+    ue = r.json()["unit_economics"]
+    assert ue["broker_seat_margin"] is None and ue["listing_margin"] is None
+
+
 def test_whatif_now_matches_the_estimate(client) -> None:
     est = client.post("/api/estimate", json={"listing": UNIT}).json()["estimate"]
     same = client.post("/api/whatif", json={"listing": UNIT, "change": {"floor": 15, "facing": "W", "setpoint_c": 24,

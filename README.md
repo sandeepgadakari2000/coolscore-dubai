@@ -255,7 +255,7 @@ On Windows use `.venv\Scripts\python.exe` instead of `.venv/bin/python`. Then:
 | `python tasks.py web` | The live site locally: landing + app pages + `/api` at http://127.0.0.1:5240 | instant |
 | `python tasks.py app` | The original Streamlit app at http://localhost:8501 (uses the committed model) | instant |
 | `python tasks.py api` | FastAPI at http://127.0.0.1:8000/docs | instant |
-| `python tasks.py test` | 188 pytest tests | ~2 min |
+| `python tasks.py test` | 195 pytest tests | ~2 min |
 | `python tasks.py data` | Re-fetch and correct weather, facade sun (network) | ~30 s |
 | `python tasks.py simulate` | 40,000 scenarios through physics + billing | ~4 min |
 | `python tasks.py train` | Surrogate, quantiles, conformal calibration, A–E bands | ~2 min |
@@ -286,7 +286,7 @@ config/      assumptions.yaml (every real-world number + source) · archetypes �
 data/        raw/ weather cache · demo/ model artifact · real_bills/ template · simulated/ (regenerable)
 src/coolscore/  weather · physics · billing · simulate · model · validation · assistant
 site/        the live site: landing film + 7 app pages (no build)   api/   index.py (Vercel) · main.py (FastAPI)
-app/         Streamlit Home.py + 7 pages (original UI)              tests/ 188 tests
+app/         Streamlit Home.py + 7 pages (original UI)              tests/ 195 tests
 docs/        prd · competitive_landscape · user-research/ · business_model · gtm_and_pilot · pitch_deck
              interview_prep · model_card · methodology · assumptions · evidence/ · validation_report
 ```

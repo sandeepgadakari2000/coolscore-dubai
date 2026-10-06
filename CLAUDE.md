@@ -36,18 +36,13 @@ src/coolscore/
   physics/    ISO 13790 5R1C hourly engine, numpy-vectorised over units; schedules
   billing/    district cooling, DEWA slabs (marginal), chiller-free, service charge
   simulate/   Latin-hypercube scenarios, batched runs, monthly aggregation only
-  model/      HistGradientBoosting P10/P50/P90, counterfactual drivers, A–E bands; lite.py = NumPy copy of the
-              trees for serverless (data/demo/coolscore_model_lite.npz, exact parity, no scikit-learn needed)
+  model/      HGB P10/P50/P90, drivers, A–E bands; lite.py = NumPy copy of the trees for serverless (exact parity)
   validation/ PII guard, real-bill accuracy report, residual calibration
   assistant/  Claude listing parser, direction helper, explanations; no-key fallback
-api/               index.py = the Vercel function (FastAPI, /api/*, page data from coolscore.web); dev.py = index + site/
-                   locally (tasks.py web); main.py = the original public API (POST /score, /compare, GET /health)
-app/               Streamlit Home.py + pages/; ui.py = Dubai liquid-glass theme; components/climate_stage =
-                   live SVG/JS weather scene (custom component, no build) fed by data/demo/climate_monthly.json
+api/               index.py = Vercel function (/api/*, data from coolscore.web) · dev.py = local twin · main.py = public API
+app/               original Streamlit UI (Home.py + pages/, ui.py theme, components/: climate scene, heat X-ray)
 docs/              plan, competitive landscape, user research, business docs
-site/              the Vercel site, no build: landing (film + three.js via CDN; data/tower.json from tasks.py landing)
-                   + app pages check/ compare/ investor/ developer/ badge/ business/ methodology/ (js/app/*.js,
-                   css/app.css; components/ = copies of the Streamlit climate + X-ray components)
+site/              live site, no build: landing film + 7 app pages (<page>/index.html, js/app/*.js, css/app.css)
 tests/             pytest
 ```
 Key design rules:
@@ -71,18 +66,13 @@ Key design rules:
 ```
 C:\Users\sande\.venvs\coolscore\Scripts\python.exe tasks.py setup     # install pinned deps
 C:\Users\sande\.venvs\coolscore\Scripts\python.exe tasks.py test      # pytest -q
-... tasks.py data             # fetch + correct weather, facade sun (network, ~30 s)
-... tasks.py report-weather   # docs/evidence/weather.md + weather.html
-... tasks.py report-physics   # docs/evidence/physics.md (orientation, archetypes, stock spread)
+... tasks.py data (weather + facade sun, network, ~30 s) | report-weather | report-physics (docs/evidence/)
 ... tasks.py simulate (~4 min) | train (~2 min) | validate | assumptions | climate (scene data)
 ... tasks.py launch (app + opens browser; "Start CoolScore.cmd" runs it) | app (Streamlit, :8501) | api (:8000/docs)
-... tasks.py landing (site/data/tower.json, ~1 min) | site (serve site/ on :5230, no caching)
-... tasks.py web (the Vercel build locally: site/ + /api on :5240; COOLSCORE_MODEL=lite to use the NumPy model)
-... python -m coolscore.model.lite (after every train: refresh the lite model; tests check parity)
+... tasks.py landing (site/data/tower.json) | site (:5230) | web (site + /api on :5240; COOLSCORE_MODEL=lite)
+... python -m coolscore.model.lite   # after every train: refresh the NumPy model (tests check parity)
 ```
 Pipeline budget: full `data → simulate → train` ≤ 15 min on a laptop; app answers < 3 s.
-Live app: **Vercel** project `coolscore-dubai` (https://coolscore-dubai.vercel.app), deployed from this folder with
-the CLI, not from Git: `npx.cmd --yes vercel deploy --prod --yes` (Git Bash: prefix `MSYS_NO_PATHCONV=1`).
-`vercel.json` serves site/ and routes /api/* to api/index.py (Python, lite model); `.vercelignore` is an allowlist
-(CLI upload limit 100 MB; the function must stay < 250 MB unzipped). Never commit `.env.local` (Vercel token).
-The older Streamlit Community Cloud app still deploys from GitHub `main` (after changing `src/`, reboot it).
+Live: Vercel `coolscore-dubai` (https://coolscore-dubai.vercel.app) by CLI from this folder, not Git:
+`npx.cmd --yes vercel deploy --prod --yes` (Git Bash: `MSYS_NO_PATHCONV=1`). `.vercelignore` is an allowlist (100 MB
+upload, function < 250 MB). Never commit `.env.local`. The old Streamlit app still deploys from `main`.

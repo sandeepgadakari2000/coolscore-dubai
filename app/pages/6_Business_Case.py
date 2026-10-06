@@ -38,6 +38,7 @@ with st.sidebar:
 df = business.pnl(b)
 be = business.break_even_month(df)
 ue = business.unit_economics(b)
+pct = lambda x: "n/a (no price set)" if x is None else f"{x:.0%}"  # noqa: E731
 m1, m2, m3 = st.columns(3)
 m1.metric("12-month revenue", ui.aed(df["revenue"].sum()))
 m2.metric("12-month profit", ui.aed(df["profit"].sum()))
@@ -61,9 +62,9 @@ st.plotly_chart(fig, width="stretch", config={"displayModeBar": False})
 st.subheader("Unit economics")
 c1, c2 = st.columns(2)
 c1.markdown(f"**Broker seat:** {ui.aed(ue['broker_seat_price'])}/month; cost to serve ≈ "
-            f"AED {ue['broker_seat_cost']:,.2f} → gross margin {ue['broker_seat_margin']:.0%}.")
+            f"AED {ue['broker_seat_cost']:,.2f} → gross margin {pct(ue['broker_seat_margin'])}.")
 c2.markdown(f"**Scored listing (portal):** AED {ue['listing_price']:.2f}/month; AI parsing ≈ "
-            f"AED {ue['llm_cost_per_listing_aed']:.3f} → gross margin {ue['listing_margin']:.0%}.")
+            f"AED {ue['llm_cost_per_listing_aed']:.3f} → gross margin {pct(ue['listing_margin'])}.")
 st.caption("Scoring itself is near-free (a model lookup); the main variable cost is optional AI listing parsing. "
            "The real costs are people, sales time and bill-data collection.")
 

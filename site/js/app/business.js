@@ -68,9 +68,10 @@ function render(r) {
     <div class="kpi"><b>${aed(rev)}</b><span>12-month revenue</span></div>
     <div class="kpi"><b class="${prof < 0 ? 'neg' : ''}">${prof < 0 ? '−' : ''}${aed(Math.abs(prof))}</b><span>12-month profit</span></div>
     <div class="kpi hl"><b>${r.break_even ? `Month ${r.break_even}` : 'Not in year 1'}</b><span>Break-even month</span><small>first month from which monthly profit stays positive</small></div>`;
-  $('#ue-seat').innerHTML = `<div class="ue"><b>${Math.round(ue.broker_seat_margin * 100)}%</b><span>gross margin</span></div>
+  const margin = (x) => (x == null ? '<b>—</b><span>no price set</span>' : `<b>${Math.round(x * 100)}%</b><span>gross margin</span>`);
+  $('#ue-seat').innerHTML = `<div class="ue">${margin(ue.broker_seat_margin)}</div>
     <p class="prose">${aed(ue.broker_seat_price)} a month; cost to serve ≈ AED ${ue.broker_seat_cost.toFixed(2)}.</p>`;
-  $('#ue-list').innerHTML = `<div class="ue"><b>${Math.round(ue.listing_margin * 100)}%</b><span>gross margin</span></div>
+  $('#ue-list').innerHTML = `<div class="ue">${margin(ue.listing_margin)}</div>
     <p class="prose">AED ${ue.listing_price.toFixed(2)} a month for the portal; AI parsing ≈ AED ${ue.llm_cost_per_listing_aed.toFixed(3)}.</p>`;
   chart(m);
   $('#tbl').innerHTML = `<thead><tr><th>Month</th><th>Revenue</th><th>Costs</th><th>Profit</th><th>Running total</th><th>Seats</th></tr></thead><tbody>${m.map((x) => `<tr>

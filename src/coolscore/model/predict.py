@@ -28,6 +28,11 @@ DEFAULTS = {  # used when a listing doesn't say; always reported back as "assume
     "era_band": "2005_2014", "glass": "medium", "balcony": "none", "obstruction": "partial",
     "system": "district_cooling", "payer": "tenant",
 }
+LIMITS = {  # (low, high, label): the app form's ranges
+    "size_sqft": (200, 8000, "Size (sq ft)"), "bedrooms": (0, 5, "Bedrooms"), "floor": (1, 150, "Floor"),
+    "total_floors": (1, 150, "Total floors"), "household_size": (1, 10, "People living there"),
+    "setpoint_c": (20, 28, "AC temperature (°C)"),
+}
 REFERENCE_LABELS = {
     "facing": ("N", "{v}-facing vs north-facing"),
     "glass": ("medium", "{v} glass vs medium glass"),
@@ -108,6 +113,10 @@ def normalise(listing: dict) -> tuple[dict, list[str], list[str]]:
         out["payer"] = "tenant"
     if int(out["floor"]) > int(out["total_floors"]) or int(out["floor"]) < 1:
         raise ValueError("floor must be between 1 and total_floors")
+    # the same limits as the app's form, so the API can't be asked about a 50 sq ft flat
+    for key, (lo, hi, label) in LIMITS.items():
+        if key in out and not lo <= float(out[key]) <= hi:
+            raise ValueError(f"{label} must be between {lo:,g} and {hi:,g}")
     out["weather_site"] = dataset.weather_site_for(out["community"])
     details = [k for k in ("household_size", "occupancy", "setpoint_c") if k in out]
     if details:
